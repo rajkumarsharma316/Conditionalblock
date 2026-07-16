@@ -1,16 +1,13 @@
-import { NetworkId, Transaction } from '@midnight-ntwrk/ledger';
-import { type WalletContext } from './walletService';
-import { Escrow } from '../compiled/escrow';
-import * as ledger from '@midnight-ntwrk/ledger';
+import { NetworkId, Transaction } from '@midnight-ntwrk/midnight-js-network-id';
+import { type WalletContext, config } from './walletService';
+import { Escrow } from '../compiled/escrow/contract/index.js';
+import * as ledger from '@midnight-ntwrk/midnight-js-protocol/ledger';
 import { deployContract, findDeployedContract } from '@midnight-ntwrk/midnight-js-contracts';
 import { httpClientProofProvider } from '@midnight-ntwrk/midnight-js-http-client-proof-provider';
 import { indexerPublicDataProvider } from '@midnight-ntwrk/midnight-js-indexer-public-data-provider';
 import { type MidnightProvider, type WalletProvider } from '@midnight-ntwrk/midnight-js-types';
 import { levelPrivateStateProvider } from '@midnight-ntwrk/midnight-js-level-private-state-provider';
-import { CompiledContract } from '@midnight-ntwrk/compact-runtime';
-import { config } from './walletService';
 import { BrowserZkConfigProvider } from './BrowserZkConfigProvider';
-import * as Rx from 'rxjs';
 
 export interface EscrowState {
     depositor: string;
@@ -28,130 +25,73 @@ export interface EscrowProviders {
     midnightProvider: WalletProvider & MidnightProvider;
 }
 
-// In a real scenario, this would use the real compiled contract ZK assets
-const escrowCompiledContract = CompiledContract.make('escrow', Escrow.Contract).pipe(
-    CompiledContract.withVacantWitnesses
-);
-
-// Sign transaction intents for Midnight Network (Unshielded/Shielded balance)
-const signTransactionIntents = (
-    tx: { intents?: Map<number, any> },
-    signFn: (payload: Uint8Array) => ledger.Signature,
-    proofMarker: 'proof' | 'pre-proof',
-): void => {
-    if (!tx.intents || tx.intents.size === 0) return;
-    for (const segment of tx.intents.keys()) {
-        const intent = tx.intents.get(segment);
-        if (!intent) continue;
-        const cloned = ledger.Intent.deserialize<ledger.SignatureEnabled, ledger.Proofish, ledger.PreBinding>(
-            'signature',
-            proofMarker,
-            'pre-binding',
-            intent.serialize(),
-        );
-        const sigData = cloned.signatureData(segment);
-        const signature = signFn(sigData);
-        if (cloned.fallibleUnshieldedOffer) {
-            const sigs = cloned.fallibleUnshieldedOffer.inputs.map(
-                (_: ledger.UtxoSpend, i: number) => cloned.fallibleUnshieldedOffer!.signatures.at(i) ?? signature,
-            );
-            cloned.fallibleUnshieldedOffer = cloned.fallibleUnshieldedOffer.addSignatures(sigs);
-        }
-        if (cloned.guaranteedUnshieldedOffer) {
-            const sigs = cloned.guaranteedUnshieldedOffer.inputs.map(
-                (_: ledger.UtxoSpend, i: number) => cloned.guaranteedUnshieldedOffer!.signatures.at(i) ?? signature,
-            );
-            cloned.guaranteedUnshieldedOffer = cloned.guaranteedUnshieldedOffer.addSignatures(sigs);
-        }
-        tx.intents.set(segment, cloned);
-    }
-};
-
-async function createWalletAndMidnightProvider(ctx: WalletContext): Promise<WalletProvider & MidnightProvider> {
-    if (ctx.type === 'lace') {
-        console.log('Using Lace wallet provider...');
-        let coinPublicKey: string;
-        let encryptionPublicKey: string;
-
-        if (typeof ctx.api.state === 'function') {
-            const state = await ctx.api.state();
-            coinPublicKey = state.coinPublicKey;
-            encryptionPublicKey = state.encryptionPublicKey;
-        } else if (typeof (ctx.api as any).getShieldedAddresses === 'function') {
-            const addresses = await (ctx.api as any).getShieldedAddresses();
-            coinPublicKey = addresses.shieldedCoinPublicKey;
-            encryptionPublicKey = addresses.shieldedEncryptionPublicKey;
-        } else {
-            throw new Error('Unknown Lace API structure');
-        }
-
-        return {
-            getCoinPublicKey: () => coinPublicKey,
-            getEncryptionPublicKey: () => encryptionPublicKey,
+export async function initializeProviders(walletContext: WalletContext): Promise<EscrowProviders> {
+    let walletAndMidnightProvider: WalletProvider & MidnightProvider;
+    
+    if (walletContext.type === 'lace') {
+        walletAndMidnightProvider = {
+            getCoinPublicKey: async () => {
+                let pk: string;
+                if (typeof walletContext.api.state === 'function') {
+                    pk = (await walletContext.api.state()).coinPublicKey;
+                } else {
+                    pk = (await (walletContext.api as any).getShieldedAddresses()).shieldedCoinPublicKey;
+                }
+                // Convert hex string to CoinPublicKey object if required by lace connector in V4
+                return pk as any;
+            },
+            getEncryptionPublicKey: async () => {
+                let pk: string;
+                if (typeof walletContext.api.state === 'function') {
+                    pk = (await walletContext.api.state()).encryptionPublicKey;
+                } else {
+                    pk = (await (walletContext.api as any).getShieldedAddresses()).shieldedEncryptionPublicKey;
+                }
+                return pk as any;
+            },
             async balanceTx(tx, _ttl?) {
-                const networkId = NetworkId.Undeployed;
                 const serializedTx = tx.serialize();
                 let result;
-                if (typeof ctx.api.balanceAndProveTransaction === 'function') {
-                    result = await ctx.api.balanceAndProveTransaction(serializedTx as any, []);
-                } else if (typeof (ctx.api as any).balanceUnsealedTransaction === 'function') {
-                    result = await (ctx.api as any).balanceUnsealedTransaction(serializedTx as any);
+                if (typeof walletContext.api.balanceAndProveTransaction === 'function') {
+                    result = await walletContext.api.balanceAndProveTransaction(serializedTx as any, []);
                 } else {
-                    throw new Error('Unknown Lace API structure: cannot find balance method');
+                    result = await (walletContext.api as any).balanceUnsealedTransaction(serializedTx as any);
                 }
-
                 if (result instanceof Uint8Array || (result && (result as any).length !== undefined && !((result as any) instanceof Transaction))) {
-                    return Transaction.deserialize(result as Uint8Array, networkId);
+                    return Transaction.deserialize(result as Uint8Array, NetworkId.Undeployed);
                 }
                 return result;
             },
             async submitTx(tx) {
-                const result = await ctx.api.submitTransaction(tx as any);
+                const result = await walletContext.api.submitTransaction(tx as any);
                 return Array.isArray(result) ? result[0] : result;
             },
         };
+    } else {
+        walletAndMidnightProvider = {
+            getCoinPublicKey: () => walletContext.shieldedSecretKeys.coinPublicKey,
+            getEncryptionPublicKey: () => walletContext.shieldedSecretKeys.encryptionPublicKey,
+            async balanceTx(tx, ttl?) {
+                const recipe = await walletContext.wallet.balanceUnboundTransaction(
+                    tx,
+                    { shieldedSecretKeys: walletContext.shieldedSecretKeys, dustSecretKey: walletContext.dustSecretKey },
+                    { ttl: ttl ?? new Date(Date.now() + 30 * 60 * 1000) }
+                );
+                return walletContext.wallet.finalizeRecipe(recipe);
+            },
+            submitTx: (tx) => walletContext.wallet.submitTransaction(tx) as any,
+        };
     }
 
-    // Local Wallet Fallback
-    console.log('Waiting for local wallet to sync...');
-    const syncTimeout = 30000;
-    const state = await Promise.race([
-        Rx.firstValueFrom(ctx.wallet.state().pipe(Rx.filter((s) => s.isSynced))),
-        new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Wallet sync timeout')), syncTimeout))
-    ]);
-
-    return {
-        getCoinPublicKey: () => state.shielded.coinPublicKey.toHexString(),
-        getEncryptionPublicKey: () => state.shielded.encryptionPublicKey.toHexString(),
-        async balanceTx(tx, ttl?) {
-            const recipe = await ctx.wallet.balanceUnboundTransaction(
-                tx,
-                { shieldedSecretKeys: ctx.shieldedSecretKeys, dustSecretKey: ctx.dustSecretKey },
-                { ttl: ttl ?? new Date(Date.now() + 30 * 60 * 1000) },
-            );
-            const signFn = (payload: Uint8Array) => ctx.unshieldedKeystore.signData(payload);
-            signTransactionIntents(recipe.baseTransaction, signFn, 'proof');
-            if (recipe.balancingTransaction) {
-                signTransactionIntents(recipe.balancingTransaction, signFn, 'pre-proof');
-            }
-            return ctx.wallet.finalizeRecipe(recipe);
-        },
-        submitTx: (tx) => ctx.wallet.submitTransaction(tx) as any,
-    };
-}
-
-export async function initializeProviders(walletContext: WalletContext): Promise<EscrowProviders> {
-    const walletAndMidnightProvider = await createWalletAndMidnightProvider(walletContext);
-    const zkConfigProvider = new BrowserZkConfigProvider('/managed');
+    const zkConfigProvider = new BrowserZkConfigProvider('/managed/escrow');
 
     return {
         privateStateProvider: levelPrivateStateProvider({
             privateStateStoreName: 'escrowPrivateState',
-            walletProvider: walletAndMidnightProvider,
         }),
         publicDataProvider: indexerPublicDataProvider(config.indexer, config.indexerWS),
         zkConfigProvider,
-        proofProvider: httpClientProofProvider(config.proofServer, zkConfigProvider),
+        proofProvider: httpClientProofProvider(config.proofServer),
         walletProvider: walletAndMidnightProvider,
         midnightProvider: walletAndMidnightProvider,
     };
@@ -159,11 +99,18 @@ export async function initializeProviders(walletContext: WalletContext): Promise
 
 export async function deployEscrowContract(providers: EscrowProviders, beneficiary: string, amount: bigint): Promise<any> {
     console.log('Deploying escrow contract...');
+    // beneficiary is passed as a hex string from UI (like shielded coin public key)
+    // we need to convert it to a Uint8Array of length 32 for Bytes<32> in compact
+    const beneficiaryBytes = Buffer.from(beneficiary, 'hex');
+    if (beneficiaryBytes.length !== 32) {
+        throw new Error(`Beneficiary must be exactly 32 bytes (64 hex characters). Got ${beneficiaryBytes.length}`);
+    }
+
     const escrowContract = await deployContract(providers, {
-        compiledContract: escrowCompiledContract as any,
         privateStateId: 'escrowPrivateState',
+        compiledContract: Escrow.contract as any,
         initialPrivateState: {},
-        args: [beneficiary, amount],
+        args: [beneficiaryBytes, amount],
     });
     console.log(`Deployed contract at address: ${escrowContract.deployTxData.public.contractAddress}`);
     return escrowContract;
@@ -178,7 +125,12 @@ export async function getEscrowState(providers: EscrowProviders, contractAddress
         return { depositor: '', beneficiary: '', amount: 0n, isLocked: true };
     }
 
-    return state;
+    return {
+        depositor: Buffer.from(state.depositor).toString('hex'),
+        beneficiary: Buffer.from(state.beneficiary).toString('hex'),
+        amount: state.amount,
+        isLocked: state.isLocked,
+    };
 }
 
 export async function releaseEscrowFunds(contract: any): Promise<void> {

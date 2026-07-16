@@ -1,9 +1,23 @@
-import { ZkConfigProvider } from '@midnight-ntwrk/midnight-js-types';
+import { ZKConfigProvider } from '@midnight-ntwrk/midnight-js-types';
 
-export class BrowserZkConfigProvider implements ZkConfigProvider {
-  constructor(private readonly basePath: string) {}
+export class BrowserZkConfigProvider extends ZKConfigProvider<string> {
+  constructor(private readonly basePath: string) {
+    super();
+  }
 
-  async getZkConfig(configName: string): Promise<Uint8Array> {
+  async getZKIR(circuitId: string): Promise<Uint8Array> {
+    return this.fetchConfig(`zkir/${circuitId}.zkir`);
+  }
+  
+  async getProverKey(circuitId: string): Promise<Uint8Array> {
+    return this.fetchConfig(`keys/${circuitId}.pk`);
+  }
+  
+  async getVerifierKey(circuitId: string): Promise<Uint8Array> {
+    return this.fetchConfig(`keys/${circuitId}.vk`);
+  }
+
+  private async fetchConfig(configName: string): Promise<Uint8Array> {
     const url = `${this.basePath}/${configName}`;
     const response = await fetch(url);
     if (!response.ok) {
