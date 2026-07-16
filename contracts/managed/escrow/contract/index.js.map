@@ -1,0 +1,8 @@
+{
+  "version": 3,
+  "file": "index.js",
+  "sourceRoot": "../../../../",
+  "sources": ["contracts/escrow.compact"],
+  "names": [],
+  "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;EASA;;;;;;;;;;MAOA,AAAA,YAQC;;;;;;;;;;;;;;;;;;;;;;OAAA;;;;GAVA;EALD;;;;;UAAY,iBAA0B;UAAE,YAAoB;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;IAL5D;;;;;;;;;yEAAmC;IACnC;;;;;;;;;yEAAqC;IACrC;;;;;;;;;yEAA+B;IAC/B;;;;;;;;;yEAAgC;IAI9B;;;;;;;2HAAuB,iBAAe;;yEAA3B;IACX;;;;;;;2HAAkB,YAAU;;yEAAtB;IACN;;;;;;;;;yEAAQ;;;;;;;GACT;EAED,AAAA,eAQC;oDAPQ;;;;;;;;;;;yHAAQ;;;;IAIf;;;;;;;;;yEAAQ;;GAGT;;;;;;;;;;;;;;;;IApBD;qCAAA;;;;;;;;;;;0GAAmC;KAAA;IACnC;qCAAA;;;;;;;;;;;0GAAqC;KAAA;IACrC;qCAAA;;;;;;;;;;;0GAA+B;KAAA;IAC/B;qCAAA;;;;;;;;;;;0GAAgC;KAAA;;;;;;;;;;"
+}
