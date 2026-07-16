@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Wallet, ShieldAlert, Clock, Code, Activity, ShieldCheck, ChevronRight, Menu, X } from 'lucide-react';
+import { createLaceWalletContext, getShieldedAddress } from './services/walletService';
 import './index.css';
 
 // --- TYPES ---
@@ -210,20 +211,16 @@ function App() {
     const checkConnection = async () => {
       if (window.midnight) {
         try {
-          const wallets = Object.values(window.midnight).filter((w: any) => w && typeof w.enable === 'function');
-          if (wallets.length > 0) {
-            const wallet = wallets[0] as any;
-            // Some wallets use isEnabled, some don't. We just check if it's there.
+          const keys = Object.keys(window.midnight);
+          if (keys.length > 0) {
+            const wallet = (window.midnight as any)[keys[0]];
             const isEnabled = typeof wallet.isEnabled === 'function' ? await wallet.isEnabled() : false;
             if (isEnabled) {
               const api = await wallet.enable();
+              const walletCtx = await createLaceWalletContext(api);
+              const shieldedAddress = await getShieldedAddress(walletCtx);
+              setAddress(shieldedAddress);
               setIsConnected(true);
-              let userAddress = '0xMidnight...User';
-              if (api && typeof api.state === 'function') {
-                 const state = await api.state();
-                 if (state && state.address) userAddress = state.address;
-              }
-              setAddress(userAddress);
             }
           }
         } catch (e) {
@@ -253,14 +250,9 @@ function App() {
         
         if (typeof wallet.enable === 'function') {
            const api = await wallet.enable();
-           
-           let userAddress = '0xMidnight...User';
-           if (api && typeof api.state === 'function') {
-              const state = await api.state();
-              if (state && state.address) userAddress = state.address;
-           }
-           
-           setAddress(userAddress);
+           const walletCtx = await createLaceWalletContext(api);
+           const shieldedAddress = await getShieldedAddress(walletCtx);
+           setAddress(shieldedAddress);
            setIsConnected(true);
         } else {
            throw new Error("The injected wallet object does not have an enable function.");
