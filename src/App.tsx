@@ -5,12 +5,10 @@ import './index.css';
 // --- TYPES ---
 declare global {
   interface Window {
-    midnight?: {
-      mnLace?: {
-        enable: () => Promise<any>;
-        isEnabled: () => Promise<boolean>;
-      };
-    };
+    midnight?: Record<string, {
+      enable: () => Promise<any>;
+      isEnabled: () => Promise<boolean>;
+    }>;
   }
 }
 
@@ -210,13 +208,23 @@ function App() {
   // Check if wallet was already enabled
   useEffect(() => {
     const checkConnection = async () => {
-      if (window.midnight?.mnLace) {
+      if (window.midnight) {
         try {
-          const isEnabled = await window.midnight.mnLace.isEnabled();
-          if (isEnabled) {
-            const api = await window.midnight.mnLace.enable();
-            setIsConnected(true);
-            setAddress('0xMidnight...User'); // Using a placeholder as Midnight ZK addresses have different formats
+          const wallets = Object.values(window.midnight).filter((w: any) => w && typeof w.enable === 'function');
+          if (wallets.length > 0) {
+            const wallet = wallets[0] as any;
+            // Some wallets use isEnabled, some don't. We just check if it's there.
+            const isEnabled = typeof wallet.isEnabled === 'function' ? await wallet.isEnabled() : false;
+            if (isEnabled) {
+              const api = await wallet.enable();
+              setIsConnected(true);
+              let userAddress = '0xMidnight...User';
+              if (api && typeof api.state === 'function') {
+                 const state = await api.state();
+                 if (state && state.address) userAddress = state.address;
+              }
+              setAddress(userAddress);
+            }
           }
         } catch (e) {
           console.error("Error checking lace connection", e);
@@ -233,18 +241,41 @@ function App() {
       return;
     }
 
-    if (window.midnight && window.midnight.mnLace) {
+    if (window.midnight) {
       try {
-        const api = await window.midnight.mnLace.enable();
-        // Successfully connected to Midnight Lace Preview
-        setAddress('0xMidnight...User');
-        setIsConnected(true);
+        const keys = Object.keys(window.midnight);
+        if (keys.length === 0) {
+          throw new Error("No wallet keys found in window.midnight");
+        }
+        
+        const firstKey = keys[0];
+        const wallet = (window.midnight as any)[firstKey];
+        
+        if (typeof wallet.enable === 'function') {
+           const api = await wallet.enable();
+           
+           let userAddress = '0xMidnight...User';
+           if (api && typeof api.state === 'function') {
+              const state = await api.state();
+              if (state && state.address) userAddress = state.address;
+           }
+           
+           setAddress(userAddress);
+           setIsConnected(true);
+        } else {
+           throw new Error("The injected wallet object does not have an enable function.");
+        }
       } catch (err: any) {
         console.error(err);
-        alert("Failed to connect wallet: " + (err.message || JSON.stringify(err)));
+        // If the user rejects the connection, it usually throws an error we can catch
+        if (err.message && err.message.includes('reject')) {
+           alert("Connection rejected by user.");
+        } else {
+           alert("Failed to connect: " + (err.message || JSON.stringify(err)));
+        }
       }
     } else {
-      alert("Lace Midnight Preview wallet extension is not installed. Please install it to use this application.");
+      alert("Lace Midnight Preview wallet extension is not installed or did not inject properly. Please refresh the page or reinstall the extension.");
     }
   };
 

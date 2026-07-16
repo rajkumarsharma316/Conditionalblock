@@ -1,0 +1,26 @@
+pragma language_version >= 0.14.0;
+
+import CompactStandardLibrary;
+
+export ledger state: {
+  depositor: Bytes<32>,
+  beneficiary: Bytes<32>,
+  amount: Uint<64>,
+  isLocked: Boolean
+};
+
+export circuit constructor(beneficiary: Bytes<32>, amount: Uint<64>): [] {
+  state.depositor = caller;
+  state.beneficiary = beneficiary;
+  state.amount = amount;
+  state.isLocked = true;
+}
+
+export circuit releaseFunds(): [] {
+  assert state.isLocked == true "Funds are already released or contract is inactive";
+  assert caller == state.beneficiary "Only the beneficiary can release the funds";
+  
+  state.isLocked = false;
+  // Note: Actual token transfer logic (tDUST or custom tokens) would be integrated here
+  // using Midnight's standard token ledger capabilities.
+}
