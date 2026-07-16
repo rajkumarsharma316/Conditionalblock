@@ -85,6 +85,7 @@ body {
   align-items: center;
   justify-content: center;
   gap: 8px;
+  white-space: nowrap;
 }
 
 .btn-primary:hover {
@@ -107,6 +108,7 @@ body {
   align-items: center;
   justify-content: center;
   gap: 8px;
+  white-space: nowrap;
 }
 
 .btn-secondary:hover {
@@ -178,13 +180,10 @@ p {
   animation: fadeInUp 0.8s ease forwards;
 }
 
-.delay-100 { animation-delay: 100ms; }
-.delay-200 { animation-delay: 200ms; }
-.delay-300 { animation-delay: 300ms; }
-
 /* Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
+  height: 8px;
 }
 ::-webkit-scrollbar-track {
   background: var(--bg-dark);
@@ -197,8 +196,31 @@ p {
   background: var(--accent-electric);
 }
 
-/* Responsive */
+/* Responsive Overrides */
 @media (max-width: 768px) {
   h1 { font-size: 2.5rem; }
   h2 { font-size: 2rem; }
+  
+  .desktop-nav {
+    display: none !important;
+  }
+  
+  .mobile-nav-toggle {
+    display: block !important;
+  }
+  
+  .footer-content {
+    justify-content: center !important;
+    text-align: center;
+  }
+  
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 16px;
+  }
+  
+  .table-container {
+    overflow-x: auto;
+  }
 }
