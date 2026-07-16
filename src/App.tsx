@@ -5,8 +5,8 @@ import './index.css';
 // --- TYPES ---
 declare global {
   interface Window {
-    cardano?: {
-      lace?: {
+    midnight?: {
+      mnLace?: {
         enable: () => Promise<any>;
         isEnabled: () => Promise<boolean>;
       };
@@ -210,16 +210,13 @@ function App() {
   // Check if wallet was already enabled
   useEffect(() => {
     const checkConnection = async () => {
-      if (window.cardano?.lace) {
+      if (window.midnight?.mnLace) {
         try {
-          const isEnabled = await window.cardano.lace.isEnabled();
+          const isEnabled = await window.midnight.mnLace.isEnabled();
           if (isEnabled) {
-            const api = await window.cardano.lace.enable();
-            const usedAddresses = await api.getUsedAddresses();
-            if (usedAddresses && usedAddresses.length > 0) {
-              setAddress(usedAddresses[0]);
-              setIsConnected(true);
-            }
+            const api = await window.midnight.mnLace.enable();
+            setIsConnected(true);
+            setAddress('0xMidnight...User'); // Using a placeholder as Midnight ZK addresses have different formats
           }
         } catch (e) {
           console.error("Error checking lace connection", e);
@@ -231,31 +228,23 @@ function App() {
 
   const handleConnect = async () => {
     if (isConnected) {
-      // Basic mock disconnect logic, true dApps usually don't "disconnect" strictly from UI unless implemented specifically
       setIsConnected(false);
       setAddress('');
       return;
     }
 
-    if (window.cardano && window.cardano.lace) {
+    if (window.midnight && window.midnight.mnLace) {
       try {
-        const api = await window.cardano.lace.enable();
-        // Typically testnet is checked via api.getNetworkId()
-        const usedAddresses = await api.getUsedAddresses();
-        
-        if (usedAddresses && usedAddresses.length > 0) {
-          setAddress(usedAddresses[0]);
-          setIsConnected(true);
-        } else {
-          alert("No addresses found in your wallet.");
-        }
+        const api = await window.midnight.mnLace.enable();
+        // Successfully connected to Midnight Lace Preview
+        setAddress('0xMidnight...User');
+        setIsConnected(true);
       } catch (err: any) {
         console.error(err);
         alert("Failed to connect wallet: " + (err.message || JSON.stringify(err)));
       }
     } else {
-      alert("Lace wallet extension is not installed. Please install it to use this application.");
-      window.open('https://www.lace.io/', '_blank');
+      alert("Lace Midnight Preview wallet extension is not installed. Please install it to use this application.");
     }
   };
 
