@@ -1,13 +1,17 @@
-import { NetworkId, Transaction } from '@midnight-ntwrk/midnight-js-network-id';
 import { type WalletContext, config } from './walletService';
-import { Escrow } from '../compiled/escrow/contract/index.js';
-import * as ledger from '@midnight-ntwrk/midnight-js-protocol/ledger';
-import { deployContract, findDeployedContract } from '@midnight-ntwrk/midnight-js-contracts';
+import { Contract, ledger as getLedger } from '../compiled/escrow/contract/index.js';
+import { deployContract } from '@midnight-ntwrk/midnight-js-contracts';
 import { httpClientProofProvider } from '@midnight-ntwrk/midnight-js-http-client-proof-provider';
 import { indexerPublicDataProvider } from '@midnight-ntwrk/midnight-js-indexer-public-data-provider';
 import { type MidnightProvider, type WalletProvider } from '@midnight-ntwrk/midnight-js-types';
 import { levelPrivateStateProvider } from '@midnight-ntwrk/midnight-js-level-private-state-provider';
 import { BrowserZkConfigProvider } from './BrowserZkConfigProvider';
+import { CompiledContract } from '@midnight-ntwrk/midnight-js-protocol/compact-js';
+import { MidnightBech32m, ShieldedAddress, ShieldedCoinPublicKey, UnshieldedAddress } from '@midnight-ntwrk/wallet-sdk-address-format';
+import { setNetworkId } from '@midnight-ntwrk/midnight-js-network-id';
+
+// Initialize network ID for the Midnight SDK
+setNetworkId('undeployed');
 
 export interface EscrowState {
     depositor: string;
@@ -25,30 +29,29 @@ export interface EscrowProviders {
     midnightProvider: WalletProvider & MidnightProvider;
 }
 
+const escrowCompiledContract = CompiledContract.make('escrow', Contract).pipe(
+    CompiledContract.withVacantWitnesses
+);
+
 export async function initializeProviders(walletContext: WalletContext): Promise<EscrowProviders> {
     let walletAndMidnightProvider: WalletProvider & MidnightProvider;
     
     if (walletContext.type === 'lace') {
+        let coinPk: string;
+        let encPk: string;
+        if (typeof walletContext.api.state === 'function') {
+            const state = await walletContext.api.state();
+            coinPk = state.coinPublicKey;
+            encPk = state.encryptionPublicKey;
+        } else {
+            const addrs = await (walletContext.api as any).getShieldedAddresses();
+            coinPk = addrs.shieldedCoinPublicKey;
+            encPk = addrs.shieldedEncryptionPublicKey;
+        }
+
         walletAndMidnightProvider = {
-            getCoinPublicKey: async () => {
-                let pk: string;
-                if (typeof walletContext.api.state === 'function') {
-                    pk = (await walletContext.api.state()).coinPublicKey;
-                } else {
-                    pk = (await (walletContext.api as any).getShieldedAddresses()).shieldedCoinPublicKey;
-                }
-                // Convert hex string to CoinPublicKey object if required by lace connector in V4
-                return pk as any;
-            },
-            getEncryptionPublicKey: async () => {
-                let pk: string;
-                if (typeof walletContext.api.state === 'function') {
-                    pk = (await walletContext.api.state()).encryptionPublicKey;
-                } else {
-                    pk = (await (walletContext.api as any).getShieldedAddresses()).shieldedEncryptionPublicKey;
-                }
-                return pk as any;
-            },
+            getCoinPublicKey: () => coinPk as any,
+            getEncryptionPublicKey: () => encPk as any,
             async balanceTx(tx, _ttl?) {
                 const serializedTx = tx.serialize();
                 let result;
@@ -56,9 +59,6 @@ export async function initializeProviders(walletContext: WalletContext): Promise
                     result = await walletContext.api.balanceAndProveTransaction(serializedTx as any, []);
                 } else {
                     result = await (walletContext.api as any).balanceUnsealedTransaction(serializedTx as any);
-                }
-                if (result instanceof Uint8Array || (result && (result as any).length !== undefined && !((result as any) instanceof Transaction))) {
-                    return Transaction.deserialize(result as Uint8Array, NetworkId.Undeployed);
                 }
                 return result;
             },
@@ -88,27 +88,49 @@ export async function initializeProviders(walletContext: WalletContext): Promise
     return {
         privateStateProvider: levelPrivateStateProvider({
             privateStateStoreName: 'escrowPrivateState',
-        }),
+            privateStoragePasswordProvider: async () => 'Local-Devnet-Development-Placeholder-1',
+            accountId: 'placeholder-account-id',
+        } as any),
         publicDataProvider: indexerPublicDataProvider(config.indexer, config.indexerWS),
         zkConfigProvider,
-        proofProvider: httpClientProofProvider(config.proofServer),
+        proofProvider: httpClientProofProvider(config.proofServer, zkConfigProvider),
         walletProvider: walletAndMidnightProvider,
         midnightProvider: walletAndMidnightProvider,
     };
 }
 
+export function tryDecodeAddressToHex(address: string, networkId: string = 'undeployed'): string {
+    if (/^[0-9a-fA-F]{64}$/.test(address)) {
+        return address;
+    }
+    if (address.startsWith('mn_')) {
+        try {
+            const parsed = MidnightBech32m.parse(address);
+            if (address.includes('mn_shield-cpk')) {
+                return ShieldedCoinPublicKey.codec.decode(networkId, parsed).toHexString();
+            } else if (address.includes('mn_shield-addr')) {
+                return ShieldedAddress.codec.decode(networkId, parsed).coinPublicKey.toHexString();
+            } else if (address.includes('mn_addr')) {
+                return UnshieldedAddress.codec.decode(networkId, parsed).data.toString('hex');
+            }
+        } catch (e) {
+            console.error("Failed to decode Bech32m address:", e);
+        }
+    }
+    return address;
+}
+
 export async function deployEscrowContract(providers: EscrowProviders, beneficiary: string, amount: bigint): Promise<any> {
     console.log('Deploying escrow contract...');
-    // beneficiary is passed as a hex string from UI (like shielded coin public key)
-    // we need to convert it to a Uint8Array of length 32 for Bytes<32> in compact
-    const beneficiaryBytes = Buffer.from(beneficiary, 'hex');
+    const hexBeneficiary = tryDecodeAddressToHex(beneficiary);
+    const beneficiaryBytes = Buffer.from(hexBeneficiary, 'hex');
     if (beneficiaryBytes.length !== 32) {
         throw new Error(`Beneficiary must be exactly 32 bytes (64 hex characters). Got ${beneficiaryBytes.length}`);
     }
 
     const escrowContract = await deployContract(providers, {
         privateStateId: 'escrowPrivateState',
-        compiledContract: Escrow.contract as any,
+        compiledContract: escrowCompiledContract as any,
         initialPrivateState: {},
         args: [beneficiaryBytes, amount],
     });
@@ -119,7 +141,7 @@ export async function deployEscrowContract(providers: EscrowProviders, beneficia
 export async function getEscrowState(providers: EscrowProviders, contractAddress: string): Promise<EscrowState> {
     const state = await providers.publicDataProvider
         .queryContractState(contractAddress)
-        .then((contractState: any) => (contractState != null ? Escrow.ledger(contractState.data) : null));
+        .then((contractState: any) => (contractState != null ? getLedger(contractState.data) : null));
 
     if (!state) {
         return { depositor: '', beneficiary: '', amount: 0n, isLocked: true };

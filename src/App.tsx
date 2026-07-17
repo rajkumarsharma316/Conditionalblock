@@ -1,22 +1,14 @@
 import { useState, useEffect } from 'react';
-import { Wallet, ShieldAlert, Clock, Code, Activity, ShieldCheck, ChevronRight, Menu, X } from 'lucide-react';
-import { createLaceWalletContext, getShieldedAddress } from './services/walletService';
+import { Wallet, ShieldAlert, Clock, Code, Activity, ShieldCheck, ChevronRight, Menu, X, Loader } from 'lucide-react';
+import { createLaceWalletContext, getShieldedAddress, type WalletContext } from './services/walletService';
+import { initializeProviders, deployEscrowContract, getEscrowState, releaseEscrowFunds, type EscrowProviders, type EscrowState } from './services/midnight';
 import './index.css';
-
-// --- TYPES ---
-declare global {
-  interface Window {
-    midnight?: Record<string, {
-      enable: () => Promise<any>;
-      isEnabled: () => Promise<boolean>;
-    }>;
-  }
-}
 
 // --- COMPONENTS ---
 
 const Header = ({ onConnect, isConnected, onNavigate, address }: { onConnect: () => void, isConnected: boolean, onNavigate: (page: string) => void, address: string }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   const toggleMenu = () => setMobileMenuOpen(!mobileMenuOpen);
 
@@ -37,9 +29,13 @@ const Header = ({ onConnect, isConnected, onNavigate, address }: { onConnect: ()
           <button 
             className={isConnected ? "btn-secondary" : "btn-primary"} 
             onClick={onConnect}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
           >
             <Wallet size={18} />
-            {isConnected ? `${address.substring(0, 6)}...${address.substring(address.length - 4)}` : 'Connect Lace'}
+            {isConnected 
+              ? (isHovered ? 'Disconnect' : `${address.substring(0, 6)}...${address.substring(address.length - 4)}`) 
+              : 'Connect Lace'}
           </button>
         </nav>
 
@@ -60,7 +56,7 @@ const Header = ({ onConnect, isConnected, onNavigate, address }: { onConnect: ()
             style={{ width: '100%', justifyContent: 'center' }}
           >
             <Wallet size={18} />
-            {isConnected ? `${address.substring(0, 6)}...${address.substring(address.length - 4)}` : 'Connect Lace'}
+            {isConnected ? 'Disconnect' : 'Connect Lace'}
           </button>
         </div>
       )}
@@ -126,12 +122,91 @@ const Features = () => {
   );
 };
 
-const Dashboard = ({ isConnected, onConnect }: { isConnected: boolean, onConnect: () => void }) => {
-  const [contracts] = useState([
-    { id: '0x8f...3a1', title: 'Freelance Design Work', amount: '2,500 tADA', status: 'Locked', condition: 'Multi-Sig (1/2)' },
-    { id: '0x4a...9b2', title: 'Real Estate Deposit', amount: '15,000 tADA', status: 'Active', condition: 'Time-Lock (Dec 1, 2026)' },
-    { id: '0x1c...7d4', title: 'Supply Chain Payment', amount: '8,200 tADA', status: 'Completed', condition: 'Oracle Delivery' },
-  ]);
+const Dashboard = ({ isConnected, onConnect, walletCtx, address }: { isConnected: boolean, onConnect: () => void, walletCtx: WalletContext | null, address: string }) => {
+  const [contracts, setContracts] = useState<{address: string, state: EscrowState}[]>([]);
+  const [providers, setProviders] = useState<EscrowProviders | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // Deploy Form State
+  const [showDeploy, setShowDeploy] = useState(false);
+  const [deployBeneficiary, setDeployBeneficiary] = useState('');
+  const [deployAmount, setDeployAmount] = useState('100');
+
+  // Load Form State
+  const [showLoad, setShowLoad] = useState(false);
+  const [loadAddress, setLoadAddress] = useState('');
+
+  useEffect(() => {
+    if (walletCtx && !providers) {
+      initializeProviders(walletCtx).then(p => setProviders(p)).catch(console.error);
+    }
+  }, [walletCtx, providers]);
+
+  const handleDeploy = async () => {
+    if (!providers) return;
+    try {
+      setIsLoading(true);
+      const amountBigInt = BigInt(deployAmount);
+      const contract = await deployEscrowContract(providers, deployBeneficiary, amountBigInt);
+      const state = await getEscrowState(providers, contract.deployTxData.public.contractAddress);
+      setContracts(prev => [...prev, { address: contract.deployTxData.public.contractAddress, state }]);
+      setShowDeploy(false);
+    } catch (e: any) {
+      console.error("Deploy failed error object:", e);
+      alert("Deploy failed: " + (e.message || (typeof e === 'object' ? JSON.stringify(e) : String(e))));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleLoadContract = async () => {
+    if (!providers || !loadAddress) return;
+    try {
+      setIsLoading(true);
+      const state = await getEscrowState(providers, loadAddress);
+      setContracts(prev => [...prev, { address: loadAddress, state }]);
+      setShowLoad(false);
+    } catch (e: any) {
+      console.error("Load failed error object:", e);
+      alert("Load failed: " + (e.message || (typeof e === 'object' ? JSON.stringify(e) : String(e))));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRelease = async (address: string) => {
+    if (!providers) return;
+    try {
+      setIsLoading(true);
+      // Wait we need the contract instance... 
+      // Actually, we can just load the deployed contract instance
+      const { findDeployedContract } = await import('@midnight-ntwrk/midnight-js-contracts');
+      const { CompiledContract } = await import('@midnight-ntwrk/midnight-js-protocol/compact-js');
+      const { Contract } = await import('./compiled/escrow/contract/index.js');
+      
+      const escrowCompiledContract = CompiledContract.make('escrow', Contract).pipe(
+          CompiledContract.withVacantWitnesses
+      );
+      
+      const deployed = await findDeployedContract(providers, {
+          contractAddress: address,
+          compiledContract: escrowCompiledContract as any,
+          privateStateId: 'escrowPrivateState',
+          initialPrivateState: {},
+      });
+      await releaseEscrowFunds(deployed);
+      
+      // Refresh state
+      const newState = await getEscrowState(providers, address);
+      setContracts(prev => prev.map(c => c.address === address ? { ...c, state: newState } : c));
+      alert("Funds Released!");
+    } catch (e: any) {
+      console.error("Release failed error object:", e);
+      alert("Release failed: " + (e.message || (typeof e === 'object' ? JSON.stringify(e) : String(e))));
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   if (!isConnected) {
     return (
@@ -139,7 +214,7 @@ const Dashboard = ({ isConnected, onConnect }: { isConnected: boolean, onConnect
         <div className="glass-panel" style={{ maxWidth: '500px', width: '100%', padding: '48px 32px' }}>
           <Wallet size={64} color="var(--accent-electric)" style={{ marginBottom: '24px', opacity: 0.8 }} />
           <h2 style={{ marginBottom: '16px' }}>Wallet Disconnected</h2>
-          <p style={{ marginBottom: '32px' }}>You must connect your Lace wallet to view and manage your escrow contracts on the testnet.</p>
+          <p style={{ marginBottom: '32px' }}>You must connect your Lace wallet to view and manage your escrow contracts on the devnet.</p>
           <button className="btn-primary" onClick={onConnect} style={{ width: '100%' }}>
             Connect Lace Wallet
           </button>
@@ -151,17 +226,58 @@ const Dashboard = ({ isConnected, onConnect }: { isConnected: boolean, onConnect
   return (
     <div className="container animate-fade-in-up" style={{ padding: '40px 24px', minHeight: '70vh' }}>
       <div className="flex-between dashboard-header" style={{ marginBottom: '32px' }}>
-        <h2>Your Escrow <span className="text-gradient">Contracts</span></h2>
-        <button className="btn-primary">+ Create Contract</button>
+        <div>
+          <h2>Your Escrow <span className="text-gradient">Contracts</span></h2>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '8px', fontFamily: 'monospace', wordBreak: 'break-all' }}>
+            Connected Shielded Key: <span style={{ color: 'var(--accent-electric)', userSelect: 'all', cursor: 'pointer' }} title="Click to select all">{address}</span>
+          </p>
+        </div>
+        <div>
+          <button className="btn-secondary" onClick={() => setShowLoad(true)} style={{ marginRight: '12px' }}>Load Contract</button>
+          <button className="btn-primary" onClick={() => setShowDeploy(true)}>+ Create Contract</button>
+        </div>
       </div>
+      
+      {isLoading && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="glass-panel" style={{ padding: '32px', textAlign: 'center' }}>
+            <Loader size={48} className="animate-spin" color="var(--accent-electric)" style={{ marginBottom: '16px' }} />
+            <h3>Processing transaction...</h3>
+            <p>Please approve the request in Lace.</p>
+          </div>
+        </div>
+      )}
+
+      {showDeploy && (
+        <div className="glass-panel" style={{ marginBottom: '32px', padding: '24px' }}>
+          <h3>Create New Escrow</h3>
+          <div style={{ display: 'flex', gap: '16px', marginTop: '16px', flexWrap: 'wrap' }}>
+            <input type="text" placeholder="Beneficiary Hex (64 chars)" value={deployBeneficiary} onChange={e => setDeployBeneficiary(e.target.value)} style={{ flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid var(--border-glass)', background: 'rgba(255,255,255,0.05)', color: 'white' }} />
+            <input type="number" placeholder="Amount" value={deployAmount} onChange={e => setDeployAmount(e.target.value)} style={{ width: '150px', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-glass)', background: 'rgba(255,255,255,0.05)', color: 'white' }} />
+            <button className="btn-primary" onClick={handleDeploy}>Deploy</button>
+            <button className="btn-secondary" onClick={() => setShowDeploy(false)}>Cancel</button>
+          </div>
+        </div>
+      )}
+
+      {showLoad && (
+        <div className="glass-panel" style={{ marginBottom: '32px', padding: '24px' }}>
+          <h3>Load Existing Escrow</h3>
+          <div style={{ display: 'flex', gap: '16px', marginTop: '16px', flexWrap: 'wrap' }}>
+            <input type="text" placeholder="Contract Address" value={loadAddress} onChange={e => setLoadAddress(e.target.value)} style={{ flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid var(--border-glass)', background: 'rgba(255,255,255,0.05)', color: 'white' }} />
+            <button className="btn-primary" onClick={handleLoadContract}>Load</button>
+            <button className="btn-secondary" onClick={() => setShowLoad(false)}>Cancel</button>
+          </div>
+        </div>
+      )}
 
       <div className="glass-panel table-container" style={{ padding: '0', overflowX: 'auto' }}>
         <table style={{ width: '100%', minWidth: '700px', borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--border-glass)', textAlign: 'left', color: 'var(--text-muted)' }}>
-              <th style={{ padding: '20px 24px', fontWeight: 500 }}>Contract Title</th>
+              <th style={{ padding: '20px 24px', fontWeight: 500 }}>Contract Address</th>
               <th style={{ padding: '20px 24px', fontWeight: 500 }}>Amount</th>
-              <th style={{ padding: '20px 24px', fontWeight: 500 }}>Condition Type</th>
+              <th style={{ padding: '20px 24px', fontWeight: 500 }}>Beneficiary</th>
               <th style={{ padding: '20px 24px', fontWeight: 500 }}>Status</th>
               <th style={{ padding: '20px 24px', fontWeight: 500 }}>Action</th>
             </tr>
@@ -170,25 +286,28 @@ const Dashboard = ({ isConnected, onConnect }: { isConnected: boolean, onConnect
             {contracts.map((c, i) => (
               <tr key={i} style={{ borderBottom: i === contracts.length - 1 ? 'none' : '1px solid var(--border-glass)' }}>
                 <td style={{ padding: '20px 24px' }}>
-                  <div style={{ fontWeight: 600 }}>{c.title}</div>
-                  <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>ID: {c.id}</div>
+                  <div style={{ fontWeight: 600 }}>{c.address.substring(0, 10)}...{c.address.substring(c.address.length - 6)}</div>
                 </td>
-                <td style={{ padding: '20px 24px', fontWeight: 600, color: 'var(--accent-electric)' }}>{c.amount}</td>
-                <td style={{ padding: '20px 24px' }}>{c.condition}</td>
+                <td style={{ padding: '20px 24px', fontWeight: 600, color: 'var(--accent-electric)' }}>{c.state.amount.toString()}</td>
+                <td style={{ padding: '20px 24px' }}>{c.state.beneficiary.substring(0, 8)}...</td>
                 <td style={{ padding: '20px 24px' }}>
                   <span style={{ 
                     padding: '4px 12px', 
                     borderRadius: '20px', 
                     fontSize: '0.85rem', 
-                    background: c.status === 'Completed' ? 'rgba(46, 213, 115, 0.1)' : c.status === 'Active' ? 'rgba(0, 210, 255, 0.1)' : 'rgba(255, 165, 2, 0.1)',
-                    color: c.status === 'Completed' ? '#2ed573' : c.status === 'Active' ? 'var(--accent-electric)' : '#ffa502',
+                    background: !c.state.isLocked ? 'rgba(46, 213, 115, 0.1)' : 'rgba(0, 210, 255, 0.1)',
+                    color: !c.state.isLocked ? '#2ed573' : 'var(--accent-electric)',
                     whiteSpace: 'nowrap'
                   }}>
-                    {c.status}
+                    {!c.state.isLocked ? 'Completed' : 'Locked'}
                   </span>
                 </td>
                 <td style={{ padding: '20px 24px' }}>
-                  <button className="btn-secondary" style={{ padding: '8px 16px', fontSize: '0.9rem' }}>View</button>
+                  {c.state.isLocked && (
+                    <button className="btn-secondary" onClick={() => handleRelease(c.address)} style={{ padding: '8px 16px', fontSize: '0.9rem' }}>
+                      Release Funds
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}
@@ -205,6 +324,7 @@ function App() {
   const [isConnected, setIsConnected] = useState(false);
   const [address, setAddress] = useState('');
   const [currentPage, setCurrentPage] = useState('home');
+  const [walletContext, setWalletContext] = useState<WalletContext | null>(null);
 
   // Check if wallet was already enabled
   useEffect(() => {
@@ -214,10 +334,18 @@ function App() {
           const keys = Object.keys(window.midnight);
           if (keys.length > 0) {
             const wallet = (window.midnight as any)[keys[0]];
-            const isEnabled = typeof wallet.isEnabled === 'function' ? await wallet.isEnabled() : false;
-            if (isEnabled) {
-              const api = await wallet.enable();
+            let api;
+            if (typeof wallet.connect === 'function') {
+              api = await wallet.connect('undeployed');
+            } else {
+              const isEnabled = typeof wallet.isEnabled === 'function' ? await wallet.isEnabled() : false;
+              if (isEnabled && typeof wallet.enable === 'function') {
+                api = await wallet.enable();
+              }
+            }
+            if (api) {
               const walletCtx = await createLaceWalletContext(api);
+              setWalletContext(walletCtx);
               const shieldedAddress = await getShieldedAddress(walletCtx);
               setAddress(shieldedAddress);
               setIsConnected(true);
@@ -248,18 +376,24 @@ function App() {
         const firstKey = keys[0];
         const wallet = (window.midnight as any)[firstKey];
         
-        if (typeof wallet.enable === 'function') {
-           const api = await wallet.enable();
-           const walletCtx = await createLaceWalletContext(api);
-           const shieldedAddress = await getShieldedAddress(walletCtx);
-           setAddress(shieldedAddress);
-           setIsConnected(true);
+        let api;
+        if (typeof wallet.connect === 'function') {
+          api = await wallet.connect('undeployed');
+        } else if (typeof wallet.enable === 'function') {
+          api = await wallet.enable();
         } else {
-           throw new Error("The injected wallet object does not have an enable function.");
+          throw new Error("The injected wallet object does not have a connect or enable function.");
+        }
+
+        if (api) {
+          const walletCtx = await createLaceWalletContext(api);
+          setWalletContext(walletCtx);
+          const shieldedAddress = await getShieldedAddress(walletCtx);
+          setAddress(shieldedAddress);
+          setIsConnected(true);
         }
       } catch (err: any) {
-        console.error(err);
-        // If the user rejects the connection, it usually throws an error we can catch
+        console.error("Failed to connect lace", err);
         if (err.message && err.message.includes('reject')) {
            alert("Connection rejected by user.");
         } else {
@@ -288,9 +422,7 @@ function App() {
           </>
         )}
         
-        {currentPage === 'dashboard' && (
-          <Dashboard isConnected={isConnected} onConnect={handleConnect} />
-        )}
+        {currentPage === 'dashboard' && <Dashboard isConnected={isConnected} onConnect={handleConnect} walletCtx={walletContext} address={address} />}
       </main>
 
       <footer style={{ padding: '40px 0', borderTop: '1px solid var(--border-glass)', marginTop: '80px', textAlign: 'center' }}>
