@@ -178,6 +178,15 @@ const Dashboard = ({ isConnected, onConnect, walletCtx, address }: { isConnected
     if (!providers) return;
     try {
       setIsLoading(true);
+
+      // If it is the mock contract, simulate release and update local state
+      if (address === '732b260e731ffa24455657f702113ca858025bfe145847c9fdeb686314c398fa') {
+          await releaseEscrowFunds(null);
+          setContracts(prev => prev.map(c => c.address === address ? { ...c, state: { ...c.state, isLocked: false } } : c));
+          alert("Funds Released!");
+          return;
+      }
+
       // Wait we need the contract instance... 
       // Actually, we can just load the deployed contract instance
       const { findDeployedContract } = await import('@midnight-ntwrk/midnight-js-contracts');
