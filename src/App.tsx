@@ -128,7 +128,7 @@ const DashboardView = ({
           <h2 style={{ margin: 0, color: 'var(--accent-electric)' }}>Dashboard</h2>
           <p style={{ color: 'var(--text-muted)', margin: '8px 0 0 0' }}>Overview of your conditional payment contracts</p>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '8px' }}>
-            Welcome to AssetBlock. Create and manage secure, time-based escrow smart contracts on the Midnight network. 
+            Welcome to ConditionalBlock. Create and manage secure, time-based escrow smart contracts on the Midnight network. 
             Set programmable payment conditions that automatically execute and release funds without requiring a middleman.
           </p>
         </div>
@@ -429,7 +429,7 @@ function App() {
           <div style={{ width: '80px', height: '80px', borderRadius: '20px', background: 'var(--accent-electric)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
              <ShieldAlert color="#0a0e17" size={40} />
           </div>
-          <h2 style={{ marginBottom: '16px' }}>Asset<span style={{ color: 'var(--accent-electric)' }}>Block</span></h2>
+          <h2 style={{ marginBottom: '16px' }}>Conditional<span style={{ color: 'var(--accent-electric)' }}>Block</span></h2>
           <p style={{ marginBottom: '32px', color: 'var(--text-muted)' }}>You must connect your Lace wallet to view and manage your escrow contracts on the Midnight devnet.</p>
           <button className="btn-primary" onClick={handleConnect} style={{ width: '100%' }}>
             Connect Lace Wallet
@@ -449,7 +449,7 @@ function App() {
               <ShieldAlert color="#0a0e17" size={20} />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
-               <h2 style={{ margin: 0, fontSize: '1.2rem', letterSpacing: '-0.5px' }}>Asset<span style={{ color: 'var(--accent-electric)' }}>Block</span></h2>
+               <h2 style={{ margin: 0, fontSize: '1.2rem', letterSpacing: '-0.5px' }}>Conditional<span style={{ color: 'var(--accent-electric)' }}>Block</span></h2>
                <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Smart Payments</span>
             </div>
           </div>
