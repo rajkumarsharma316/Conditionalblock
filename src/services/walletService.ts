@@ -18,10 +18,10 @@ import type { DAppConnectorWalletAPI } from '@midnight-ntwrk/dapp-connector-api'
 // For testnet, we connect to Midnight nodes. In an actual production scenario,
 // these would be configurable via environment variables.
 export const config = {
-    indexer: 'http://localhost:8088/api/v1/graphql',
-    indexerWS: 'ws://localhost:8088/api/v1/graphql',
-    node: 'http://localhost:9944',
-    proofServer: 'http://localhost:6300',
+    indexer: import.meta.env.VITE_INDEXER_URL || 'http://localhost:8088/api/v1/graphql',
+    indexerWS: import.meta.env.VITE_INDEXER_WS_URL || 'ws://localhost:8088/api/v1/graphql',
+    node: import.meta.env.VITE_NODE_URL || 'http://localhost:9944',
+    proofServer: import.meta.env.VITE_PROOF_SERVER_URL || 'http://localhost:6300',
 };
 
 const WALLET_SEED_KEY = 'midnight_wallet_seed';
