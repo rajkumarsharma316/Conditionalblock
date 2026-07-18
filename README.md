@@ -1,13 +1,13 @@
-# AssetBlock ⚡
+# ConditionalBlock ⚡
 
 > Programmable conditional payments and smart escrows on the Midnight Network.
 
-AssetBlock is a decentralized application (dApp) that enables users to create, manage, and execute programmable escrow contracts. By leveraging the speed and zero-knowledge privacy of the Midnight blockchain, AssetBlock allows you to set specific conditions (time, multi-signature approvals, or external oracle data) that must be met before funds are released.
+ConditionalBlock is a decentralized application (dApp) that enables users to create, manage, and execute programmable escrow contracts. By leveraging the speed and zero-knowledge privacy of the Midnight blockchain, ConditionalBlock allows you to set specific conditions (time, multi-signature approvals, or external oracle data) that must be met before funds are released.
 
 ---
 
 ## 🔗 Live App
-https://asset-block.vercel.app/
+https://conditional-block.vercel.app/
 
 ## 🎥 Video
 
@@ -77,7 +77,7 @@ Based on the collected user feedback and observations during the Level 5 validat
 As part of the final Demo Day preparations, the following production-readiness features have been implemented:
 
 ### 1. Advanced Features 🌟
-AssetBLOCK highlights two core advanced features:
+ConditionalBlock highlights two core advanced features:
 - **Zero-Knowledge Privacy**: Contract conditions and asset locking are managed natively using Midnight's privacy-preserving smart contract capabilities.
 - **Conditional Logic**: Approval-based contracts enforce rules natively on the Midnight network before executing a payload, ensuring true trustless multi-party escrow.
 
@@ -185,8 +185,8 @@ Completed a thorough security review of the application's auth flow, transaction
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/yourusername/AssetBLOCK.git
-cd AssetBLOCK
+git clone https://github.com/yourusername/ConditionalBlock.git
+cd ConditionalBlock
 ```
 
 ### 2. Frontend Setup
