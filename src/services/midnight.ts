@@ -200,7 +200,7 @@ export async function getEscrowState(providers: EscrowProviders, contractAddress
     }
 }
 
-export async function releaseEscrowFunds(contract: any): Promise<void> {
+export async function releaseEscrowFunds(_contract: any): Promise<void> {
     console.log(`Mocking release of escrow funds...`);
     await new Promise(resolve => setTimeout(resolve, 1500));
 }
