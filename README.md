@@ -10,13 +10,13 @@ ConditionalBlock is a decentralized application (dApp) that enables users to cre
 https://conditionalblock-z9qm-omega.vercel.app/
 ## 🎥 Video
 
-https://github.com/user-attachments/assets/3fa744c5-9ad0-4ec8-9ce2-b409dd064293
+https://github.com/user-attachments/assets/d43603d7-9759-4292-bc8a-79d2b70c5950
 
 ---
 
 This project has been validated with real testnet users as part of the Level 5 requirements.
 
-### 👥 Level 6: Production Scaling (53+ Verified Active Users)
+### Production Scaling (53+ Verified Active Users)
 As part of the final production readiness phase, we have scaled the platform and validated with over 53 testnet users.
 
 #### Table 1: Verified User Directory
