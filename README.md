@@ -114,18 +114,6 @@ The platform features an active internal metrics dashboard (DAU, transactions, r
 - **Monitoring Dashboard:**<img width="1918" height="787" alt="image" src="https://github.com/user-attachments/assets/18f289aa-0366-4450-b825-4b0bf492fa12" />
 
 
-### 3. Data Indexing 🗃️
-Implemented robust data indexing for smart contracts via our backend using Supabase PostgreSQL.
-- **Approach:** Contracts are indexed with strict sorting (`created_at`), pagination, and search capabilities (`ilike` on title/description) to guarantee fast read performance.
-- **Endpoint:** `GET /api/indexing/contracts?page=1&limit=10&search=escrow`
-
-### 4. Security & Audits 🔒
-Completed a thorough security review of the application's auth flow, transaction builder, and data models.
-- **[View the Security Checklist (SECURITY.md)](SECURITY.md)**
-
-### 5. Community Contribution 🌍
-- **Twitter Post:** https://x.com/RajkumarSh18704/status/2048349207099253028?s=20
-
 ---
 
 ## ✨ Key Features
