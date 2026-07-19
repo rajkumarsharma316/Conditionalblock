@@ -147,16 +147,9 @@ Completed a thorough security review of the application's auth flow, transaction
 ### Desktop Experience
 <!-- PLACEHOLDER: Insert desktop screenshots here -->
 <p align="center">
-  <img width="1919" height="900" alt="image" src="https://github.com/user-attachments/assets/4becb0dd-cf28-4293-834c-b65820948ea1" />
-  <img width="1919" height="901" alt="image" src="https://github.com/user-attachments/assets/70773366-e02e-45c7-894c-52276b3591ce" />
-</p>
+ <img width="1918" height="911" alt="image" src="https://github.com/user-attachments/assets/d42dabad-ba88-4cab-8fb6-756020ee1e5e" />
 
-### Mobile Experience
-<!-- PLACEHOLDER: Insert mobile screenshots here -->
-<p align="center">
-  <img width="30%" alt="image" src="https://github.com/user-attachments/assets/74cd9461-c3fa-47ef-9c76-ad0769fe5299" /> <img width="30%" alt="image" src="https://github.com/user-attachments/assets/96fa56a6-ab46-46ac-8bc9-757d33c3230e" />
 </p>
-
 ---
 
 ## 🏗️ Architecture
