@@ -109,8 +109,10 @@ ConditionalBlock highlights two core advanced features:
 
 ### 2. Live Metrics & Monitoring Dashboard 📊
 The platform features an active internal metrics dashboard (DAU, transactions, retention) and an infrastructure monitoring dashboard (System health, DB latency, Worker status).
-- **Metrics Dashboard:** <img width="1919" height="908" alt="image" src="https://github.com/user-attachments/assets/2afa83f7-d5c1-4e0e-830f-068f1ed14020" />
-- **Monitoring Dashboard:**<img width="1902" height="845" alt="image" src="https://github.com/user-attachments/assets/8498968c-36b7-458c-9eb4-ab3d3f2b1c7d" />
+- **Metrics Dashboard:**<img width="1918" height="710" alt="image" src="https://github.com/user-attachments/assets/ad0c71b4-62ef-48c6-a0f9-2a3fafd01eff" />
+
+- **Monitoring Dashboard:**<img width="1918" height="787" alt="image" src="https://github.com/user-attachments/assets/18f289aa-0366-4450-b825-4b0bf492fa12" />
+
 
 ### 3. Data Indexing 🗃️
 Implemented robust data indexing for smart contracts via our backend using Supabase PostgreSQL.
