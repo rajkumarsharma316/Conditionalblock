@@ -188,54 +188,50 @@ const DashboardView = ({
         </div>
       )}
 
-      <div className="glass-panel table-container" style={{ padding: '0', overflowX: 'auto', minHeight: '300px' }}>
+      <div style={{ marginTop: 'var(--space-lg)' }}>
         {contracts.length === 0 ? (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '300px', color: 'var(--text-muted)' }}>
+          <div className="glass-panel flex-center" style={{ flexDirection: 'column', height: '300px', color: 'var(--text-muted)' }}>
             <FileEdit size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
             <h3>No active contracts</h3>
           </div>
         ) : (
-          <table style={{ width: '100%', minWidth: '700px', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ borderBottom: '1px solid var(--border-glass)', textAlign: 'left', color: 'var(--text-muted)' }}>
-                <th style={{ padding: '20px 24px', fontWeight: 500 }}>Contract Address</th>
-                <th style={{ padding: '20px 24px', fontWeight: 500 }}>Amount</th>
-                <th style={{ padding: '20px 24px', fontWeight: 500 }}>Beneficiary</th>
-                <th style={{ padding: '20px 24px', fontWeight: 500 }}>Status</th>
-                <th style={{ padding: '20px 24px', fontWeight: 500 }}>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {contracts.map((c: any, i: number) => (
-                <tr key={i} style={{ borderBottom: i === contracts.length - 1 ? 'none' : '1px solid var(--border-glass)' }}>
-                  <td style={{ padding: '20px 24px' }}>
-                    <div style={{ fontWeight: 600 }}>{c.address.substring(0, 10)}...{c.address.substring(c.address.length - 6)}</div>
-                  </td>
-                  <td style={{ padding: '20px 24px', fontWeight: 600, color: 'var(--accent-electric)' }}>{c.state.amount.toString()} DUST</td>
-                  <td style={{ padding: '20px 24px' }}>{c.state.beneficiary.substring(0, 8)}...</td>
-                  <td style={{ padding: '20px 24px' }}>
-                    <span style={{ 
-                      padding: '4px 12px', 
-                      borderRadius: '20px', 
-                      fontSize: '0.85rem', 
-                      background: !c.state.isLocked ? 'rgba(46, 213, 115, 0.1)' : 'rgba(0, 210, 255, 0.1)',
-                      color: !c.state.isLocked ? '#2ed573' : 'var(--accent-electric)',
-                      whiteSpace: 'nowrap'
-                    }}>
-                      {!c.state.isLocked ? 'Completed' : 'Locked'}
-                    </span>
-                  </td>
-                  <td style={{ padding: '20px 24px' }}>
-                    {c.state.isLocked && (
-                      <button className="btn-secondary" onClick={() => handleRelease(c.address)} style={{ padding: '8px 16px', fontSize: '0.9rem' }}>
-                        Release Funds
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="grid-cards">
+            {contracts.map((c: any, i: number) => (
+              <div key={i} className="glass-panel" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
+                <div className="flex-between">
+                  <div style={{ fontWeight: 600, fontSize: '1.1rem' }}>
+                    {c.address.substring(0, 10)}...{c.address.substring(c.address.length - 6)}
+                  </div>
+                  <span style={{ 
+                    padding: '6px 16px', 
+                    borderRadius: '24px', 
+                    fontSize: '0.9rem',
+                    fontWeight: 600,
+                    background: !c.state.isLocked ? 'rgba(46, 213, 115, 0.1)' : 'rgba(0, 210, 255, 0.1)',
+                    color: !c.state.isLocked ? '#2ed573' : 'var(--accent-electric)',
+                  }}>
+                    {!c.state.isLocked ? 'Completed' : 'Locked'}
+                  </span>
+                </div>
+                
+                <div style={{ padding: 'var(--space-sm) 0', borderTop: '1px solid var(--border-glass)', borderBottom: '1px solid var(--border-glass)' }}>
+                  <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '4px' }}>Value Locked</div>
+                  <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--accent-electric)' }}>{c.state.amount.toString()} DUST</div>
+                </div>
+
+                <div>
+                  <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '4px' }}>Beneficiary</div>
+                  <div style={{ fontFamily: 'monospace', fontSize: '0.95rem' }}>{c.state.beneficiary.substring(0, 16)}...</div>
+                </div>
+
+                {c.state.isLocked && (
+                  <button className="btn-secondary" onClick={() => handleRelease(c.address)} style={{ marginTop: 'var(--space-sm)', width: '100%' }}>
+                    Release Funds
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
         )}
       </div>
     </div>
@@ -546,33 +542,35 @@ function App() {
 
         {/* Scrollable Views */}
         <div className="main-scroll-area">
-           {isLoading && (
-            <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <div className="glass-panel" style={{ padding: '32px', textAlign: 'center' }}>
-                <Loader size={48} className="animate-spin" color="var(--accent-electric)" style={{ marginBottom: '16px' }} />
-                <h3>Processing transaction...</h3>
-                <p>Please approve the request in Lace.</p>
+          <div className="main-content-inner">
+            {isLoading && (
+              <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div className="glass-panel" style={{ padding: '32px', textAlign: 'center' }}>
+                  <Loader size={48} className="animate-spin" color="var(--accent-electric)" style={{ marginBottom: '16px' }} />
+                  <h3>Processing transaction...</h3>
+                  <p>Please approve the request in Lace.</p>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {currentView === 'dashboard' && (
-            <DashboardView 
-              contracts={contracts} handleRelease={handleRelease} 
-              showDeploy={showDeploy} setShowDeploy={setShowDeploy} 
-              showLoad={showLoad} setShowLoad={setShowLoad}
-              deployBeneficiary={deployBeneficiary} setDeployBeneficiary={setDeployBeneficiary}
-              deployAmount={deployAmount} setDeployAmount={setDeployAmount} handleDeploy={handleDeploy}
-              loadAddress={loadAddress} setLoadAddress={setLoadAddress} handleLoadContract={handleLoadContract}
-            />
-          )}
-          {currentView === 'metrics' && <MetricsView />}
-          {currentView === 'monitoring' && <MonitoringView />}
-          {currentView === 'transactions' && (
-             <div className="flex-center" style={{ height: '300px', color: 'var(--text-muted)' }}>
-                <h3>No recent transactions found.</h3>
-             </div>
-          )}
+            {currentView === 'dashboard' && (
+              <DashboardView 
+                contracts={contracts} handleRelease={handleRelease} 
+                showDeploy={showDeploy} setShowDeploy={setShowDeploy} 
+                showLoad={showLoad} setShowLoad={setShowLoad}
+                deployBeneficiary={deployBeneficiary} setDeployBeneficiary={setDeployBeneficiary}
+                deployAmount={deployAmount} setDeployAmount={setDeployAmount} handleDeploy={handleDeploy}
+                loadAddress={loadAddress} setLoadAddress={setLoadAddress} handleLoadContract={handleLoadContract}
+              />
+            )}
+            {currentView === 'metrics' && <MetricsView />}
+            {currentView === 'monitoring' && <MonitoringView />}
+            {currentView === 'transactions' && (
+              <div className="flex-center" style={{ height: '300px', color: 'var(--text-muted)' }}>
+                  <h3>No recent transactions found.</h3>
+              </div>
+            )}
+          </div>
         </div>
       </main>
     </div>
