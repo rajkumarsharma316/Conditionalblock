@@ -14,6 +14,20 @@ https://github.com/user-attachments/assets/d43603d7-9759-4292-bc8a-79d2b70c5950
 
 ---
 
+## 📄 Deployed Contract Address (Midnight Testnet)
+
+The escrow smart contract is deployed on the **Midnight Testnet** at the following address:
+
+```
+Contract Address: 732b260e731ffa24455657f702113ca858025bfe145847c9fdeb686314c398fa
+Network:          Midnight Testnet
+Language:         Compact (ZK-native)
+```
+
+> The contract is written in **Compact** (Midnight's zero-knowledge smart contract language) and compiled to ZK circuits. The address above is the on-chain identifier used to interact with the deployed escrow logic via the Midnight indexer.
+
+---
+
 This project has been validated with real testnet users as part of the Level 5 requirements.
 
 ### Production Scaling (53+ Verified Active Users)

@@ -451,9 +451,7 @@ function App() {
     return (
       <div className="flex-center" style={{ minHeight: '100vh', padding: '24px' }}>
         <div className="glass-panel animate-fade-in-up" style={{ maxWidth: '500px', width: '100%', padding: '48px 32px', textAlign: 'center' }}>
-          <div style={{ width: '80px', height: '80px', borderRadius: '20px', background: 'var(--accent-electric)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
-             <ShieldAlert color="#0a0e17" size={40} />
-          </div>
+          <img src="/logo.png" alt="ConditionalBlock Logo" style={{ width: '180px', height: 'auto', margin: '0 auto 24px', display: 'block', objectFit: 'contain' }} />
           <h2 style={{ marginBottom: '16px' }}>Conditional<span style={{ color: 'var(--accent-electric)' }}>Block</span></h2>
           <p style={{ marginBottom: '32px', color: 'var(--text-muted)' }}>You must connect your Lace wallet to view and manage your escrow contracts on the Midnight devnet.</p>
           
@@ -483,14 +481,8 @@ function App() {
       {/* Sidebar */}
       <aside className="app-sidebar">
         <div className="sidebar-header flex-between" style={{ alignItems: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'var(--accent-electric)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <ShieldAlert color="#0a0e17" size={20} />
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-               <h2 style={{ margin: 0, fontSize: '1.2rem', letterSpacing: '-0.5px' }}>Conditional<span style={{ color: 'var(--accent-electric)' }}>Block</span></h2>
-               <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Smart Payments</span>
-            </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <img src="/logo.png" alt="ConditionalBlock" style={{ height: '32px', width: 'auto', objectFit: 'contain' }} />
           </div>
           <button style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-glass)', borderRadius: '6px', color: 'var(--text-muted)', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
             <ChevronRight size={16} />
