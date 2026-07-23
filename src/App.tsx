@@ -327,19 +327,14 @@ function App() {
           throw new Error("No wallet keys found in window.midnight");
         }
         
-        const firstKey = keys[0];
-        const wallet = (window.midnight as any)[firstKey];
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error("Connection request timed out (extension might have crashed)")), 10000)
-        );
-
         let api;
-        if (typeof wallet.enable === 'function') {
-          api = await Promise.race([wallet.enable(), timeoutPromise]);
-        } else if (typeof wallet.connect === 'function') {
-          api = await Promise.race([wallet.connect('undeployed'), timeoutPromise]);
+        // Midnight Lace uses connect() as the primary API
+        if (typeof wallet.connect === 'function') {
+          api = await wallet.connect('undeployed');
+        } else if (typeof wallet.enable === 'function') {
+          api = await wallet.enable();
         } else {
-          throw new Error("The injected wallet object does not have a connect or enable function.");
+          throw new Error("The wallet does not expose a connect() or enable() function.");
         }
 
         if (api) {
@@ -351,10 +346,13 @@ function App() {
         }
       } catch (err: any) {
         console.error("Failed to connect lace", err);
-        if (err.message && err.message.includes('reject')) {
-           setConnectionError("Connection rejected by user.");
+        const msg = err.message || JSON.stringify(err);
+        if (msg.includes('reject') || msg.includes('denied') || msg.includes('cancel')) {
+          setConnectionError("Connection rejected. Please approve in your Lace wallet and try again.");
+        } else if (msg.includes('port closed') || msg.includes('liveness') || msg.includes('timed out')) {
+          setConnectionError("Lace extension crashed. Go to chrome://extensions → find Lace → click reload icon, then try again.");
         } else {
-           setConnectionError("Failed to connect: " + (err.message || JSON.stringify(err)));
+          setConnectionError("Failed to connect: " + msg);
         }
       } finally {
         setIsConnecting(false);
