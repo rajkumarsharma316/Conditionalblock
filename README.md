@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="./public/logo.png" width="120" alt="ConditionalBlock Logo" />
+</p>
+
 # ConditionalBlock ⚡
 
 > Programmable conditional payments and smart escrows on the Midnight Network.
