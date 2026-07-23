@@ -268,27 +268,31 @@ function App() {
 
   // Check if wallet was already enabled
   useEffect(() => {
+    let mounted = true;
     const checkConnection = async () => {
       if (window.midnight) {
         try {
           const keys = Object.keys(window.midnight);
           if (keys.length > 0) {
             const wallet = (window.midnight as any)[keys[0]];
-            let api;
-            if (typeof wallet.connect === 'function') {
-              api = await wallet.connect('undeployed');
-            } else {
-              const isEnabled = typeof wallet.isEnabled === 'function' ? await wallet.isEnabled() : false;
-              if (isEnabled && typeof wallet.enable === 'function') {
+            const isEnabled = typeof wallet.isEnabled === 'function' ? await wallet.isEnabled() : false;
+            
+            // Only auto-connect if the user previously enabled the wallet
+            if (isEnabled && mounted) {
+              let api;
+              if (typeof wallet.enable === 'function') {
                 api = await wallet.enable();
+              } else if (typeof wallet.connect === 'function') {
+                api = await wallet.connect('undeployed');
               }
-            }
-            if (api) {
-              const walletCtx = await createLaceWalletContext(api);
-              setWalletContext(walletCtx);
-              const shieldedAddress = await getShieldedAddress(walletCtx);
-              setAddress(shieldedAddress);
-              setIsConnected(true);
+              
+              if (api && mounted) {
+                const walletCtx = await createLaceWalletContext(api);
+                setWalletContext(walletCtx);
+                const shieldedAddress = await getShieldedAddress(walletCtx);
+                setAddress(shieldedAddress);
+                setIsConnected(true);
+              }
             }
           }
         } catch (e) {
@@ -297,6 +301,7 @@ function App() {
       }
     };
     checkConnection();
+    return () => { mounted = false; };
   }, []);
 
   useEffect(() => {
@@ -324,12 +329,15 @@ function App() {
         
         const firstKey = keys[0];
         const wallet = (window.midnight as any)[firstKey];
-        
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error("Connection request timed out (extension might have crashed)")), 10000)
+        );
+
         let api;
-        if (typeof wallet.connect === 'function') {
-          api = await wallet.connect('undeployed');
-        } else if (typeof wallet.enable === 'function') {
-          api = await wallet.enable();
+        if (typeof wallet.enable === 'function') {
+          api = await Promise.race([wallet.enable(), timeoutPromise]);
+        } else if (typeof wallet.connect === 'function') {
+          api = await Promise.race([wallet.connect('undeployed'), timeoutPromise]);
         } else {
           throw new Error("The injected wallet object does not have a connect or enable function.");
         }
