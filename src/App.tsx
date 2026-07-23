@@ -250,6 +250,8 @@ function App() {
   const [address, setAddress] = useState('');
   const [currentView, setCurrentView] = useState('dashboard');
   const [walletContext, setWalletContext] = useState<WalletContext | null>(null);
+  const [connectionError, setConnectionError] = useState<string | null>(null);
+  const [isConnecting, setIsConnecting] = useState(false);
 
   // Dashboard Data State
   const [contracts, setContracts] = useState<{address: string, state: EscrowState}[]>([]);
