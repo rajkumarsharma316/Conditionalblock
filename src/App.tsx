@@ -312,6 +312,9 @@ function App() {
       return;
     }
 
+    setConnectionError(null);
+    setIsConnecting(true);
+
     if (window.midnight) {
       try {
         const keys = Object.keys(window.midnight);
@@ -341,13 +344,16 @@ function App() {
       } catch (err: any) {
         console.error("Failed to connect lace", err);
         if (err.message && err.message.includes('reject')) {
-           alert("Connection rejected by user.");
+           setConnectionError("Connection rejected by user.");
         } else {
-           alert("Failed to connect: " + (err.message || JSON.stringify(err)));
+           setConnectionError("Failed to connect: " + (err.message || JSON.stringify(err)));
         }
+      } finally {
+        setIsConnecting(false);
       }
     } else {
-      alert("Lace Midnight Preview wallet extension is not installed or did not inject properly. Please refresh the page or reinstall the extension.");
+      setConnectionError("Lace Midnight Preview wallet extension is not installed or did not inject properly. Please ensure it is installed and enabled.");
+      setIsConnecting(false);
     }
   };
 
