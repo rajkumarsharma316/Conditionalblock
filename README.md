@@ -10,13 +10,13 @@ ConditionalBlock is a decentralized application (dApp) that enables users to cre
 https://conditionalblock-z9qm-omega.vercel.app/
 ## 🎥 Video
 
-https://github.com/user-attachments/assets/3fa744c5-9ad0-4ec8-9ce2-b409dd064293
+https://github.com/user-attachments/assets/d43603d7-9759-4292-bc8a-79d2b70c5950
 
 ---
 
 This project has been validated with real testnet users as part of the Level 5 requirements.
 
-### 👥 Level 6: Production Scaling (53+ Verified Active Users)
+### Production Scaling (53+ Verified Active Users)
 As part of the final production readiness phase, we have scaled the platform and validated with over 53 testnet users.
 
 #### Table 1: Verified User Directory
@@ -78,7 +78,7 @@ As part of the final production readiness phase, we have scaled the platform and
 | 53 | Shivam Tomar | `5fcb33afad1cc0a58621c6bebd476bd917fd3716c174debb0a83de29c94655a1` |
 
 ### 📊 Feedback Documentation & Implementation
-| **[📊 View Live Google Form Responses Sheet](https://docs.google.com/spreadsheets/d/1SATPrhJiX6mnCNiGYwmHkrTFR31Rca-eoK02GfVTAXU/edit?usp=sharing)**
+| **[📊 View Live Google Form Responses Sheet](https://docs.google.com/spreadsheets/d/1wdbWQZkc-XKV2L0VTtfzrNDuuFwLI3NTu4b1GB482LI/edit?usp=sharing)**
 
 User feedback was collected through two channels to maximize user convenience: directly via our native in-app feedback UI and externally through our Official Google Form. 
 
@@ -109,20 +109,10 @@ ConditionalBlock highlights two core advanced features:
 
 ### 2. Live Metrics & Monitoring Dashboard 📊
 The platform features an active internal metrics dashboard (DAU, transactions, retention) and an infrastructure monitoring dashboard (System health, DB latency, Worker status).
-- **Metrics Dashboard:** <img width="1919" height="908" alt="image" src="https://github.com/user-attachments/assets/2afa83f7-d5c1-4e0e-830f-068f1ed14020" />
-- **Monitoring Dashboard:**<img width="1902" height="845" alt="image" src="https://github.com/user-attachments/assets/8498968c-36b7-458c-9eb4-ab3d3f2b1c7d" />
+- **Metrics Dashboard:**<img width="1918" height="710" alt="image" src="https://github.com/user-attachments/assets/ad0c71b4-62ef-48c6-a0f9-2a3fafd01eff" />
 
-### 3. Data Indexing 🗃️
-Implemented robust data indexing for smart contracts via our backend using Supabase PostgreSQL.
-- **Approach:** Contracts are indexed with strict sorting (`created_at`), pagination, and search capabilities (`ilike` on title/description) to guarantee fast read performance.
-- **Endpoint:** `GET /api/indexing/contracts?page=1&limit=10&search=escrow`
+- **Monitoring Dashboard:**<img width="1918" height="787" alt="image" src="https://github.com/user-attachments/assets/18f289aa-0366-4450-b825-4b0bf492fa12" />
 
-### 4. Security & Audits 🔒
-Completed a thorough security review of the application's auth flow, transaction builder, and data models.
-- **[View the Security Checklist (SECURITY.md)](SECURITY.md)**
-
-### 5. Community Contribution 🌍
-- **Twitter Post:** https://x.com/RajkumarSh18704/status/2048349207099253028?s=20
 
 ---
 
@@ -145,16 +135,9 @@ Completed a thorough security review of the application's auth flow, transaction
 ### Desktop Experience
 <!-- PLACEHOLDER: Insert desktop screenshots here -->
 <p align="center">
-  <img width="1919" height="900" alt="image" src="https://github.com/user-attachments/assets/4becb0dd-cf28-4293-834c-b65820948ea1" />
-  <img width="1919" height="901" alt="image" src="https://github.com/user-attachments/assets/70773366-e02e-45c7-894c-52276b3591ce" />
-</p>
+ <img width="1918" height="911" alt="image" src="https://github.com/user-attachments/assets/d42dabad-ba88-4cab-8fb6-756020ee1e5e" />
 
-### Mobile Experience
-<!-- PLACEHOLDER: Insert mobile screenshots here -->
-<p align="center">
-  <img width="30%" alt="image" src="https://github.com/user-attachments/assets/74cd9461-c3fa-47ef-9c76-ad0769fe5299" /> <img width="30%" alt="image" src="https://github.com/user-attachments/assets/96fa56a6-ab46-46ac-8bc9-757d33c3230e" />
 </p>
-
 ---
 
 ## 🏗️ Architecture
