@@ -447,8 +447,22 @@ function App() {
           </div>
           <h2 style={{ marginBottom: '16px' }}>Conditional<span style={{ color: 'var(--accent-electric)' }}>Block</span></h2>
           <p style={{ marginBottom: '32px', color: 'var(--text-muted)' }}>You must connect your Lace wallet to view and manage your escrow contracts on the Midnight devnet.</p>
-          <button className="btn-primary" onClick={handleConnect} style={{ width: '100%' }}>
-            Connect Lace Wallet
+          
+          {connectionError && (
+            <div style={{ padding: '12px', background: 'rgba(231, 76, 60, 0.1)', border: '1px solid #e74c3c', color: '#ff6b6b', borderRadius: '8px', marginBottom: '20px', fontSize: '0.9rem', textAlign: 'left' }}>
+              <strong>Error:</strong> {connectionError}
+            </div>
+          )}
+
+          <button className="btn-primary" onClick={handleConnect} disabled={isConnecting} style={{ width: '100%', opacity: isConnecting ? 0.7 : 1, cursor: isConnecting ? 'wait' : 'pointer' }}>
+            {isConnecting ? (
+              <>
+                <Loader className="animate-spin" size={20} />
+                Connecting...
+              </>
+            ) : (
+              'Connect Lace Wallet'
+            )}
           </button>
         </div>
       </div>
