@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { 
-  Wallet, ShieldAlert, Clock, Activity, ChevronRight, 
+  Wallet, Clock, Activity, ChevronRight, 
   Loader, LayoutDashboard, FileEdit, ArrowRightLeft, 
   BarChart3, ActivitySquare, MessageSquare, Download, Sun, Bell, LogOut, CheckCircle2, Server, Database, Cpu
 } from 'lucide-react';
