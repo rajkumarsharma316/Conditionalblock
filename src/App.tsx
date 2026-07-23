@@ -255,6 +255,7 @@ function App() {
   const [contracts, setContracts] = useState<{address: string, state: EscrowState}[]>([]);
   const [providers, setProviders] = useState<EscrowProviders | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [dustBalance, setDustBalance] = useState(1000);
   
   // Forms State
   const [showDeploy, setShowDeploy] = useState(false);
@@ -350,12 +351,16 @@ function App() {
 
   const handleDeploy = async () => {
     if (!providers) return;
+    const amount = parseInt(deployAmount) || 0;
+    if (amount <= 0) { alert('Enter a valid amount.'); return; }
+    if (amount > dustBalance) { alert(`Insufficient DUST balance. You have ${dustBalance} DUST.`); return; }
     try {
       setIsLoading(true);
       const amountBigInt = BigInt(deployAmount);
       const contract = await deployEscrowContract(providers, deployBeneficiary, amountBigInt);
       const state = await getEscrowState(providers, contract.deployTxData.public.contractAddress);
       setContracts(prev => [...prev, { address: contract.deployTxData.public.contractAddress, state }]);
+      setDustBalance(prev => prev - amount);
       setShowDeploy(false);
     } catch (e: any) {
       console.error("Deploy failed error object:", e);
@@ -389,8 +394,11 @@ function App() {
       setIsLoading(true);
 
       if (contractAddress === '732b260e731ffa24455657f702113ca858025bfe145847c9fdeb686314c398fa') {
+          const releasedContract = contracts.find(c => c.address === contractAddress);
+          const releasedAmount = releasedContract ? Number(releasedContract.state.amount) : 0;
           await releaseEscrowFunds(null);
           setContracts(prev => prev.map(c => c.address === contractAddress ? { ...c, state: { ...c.state, isLocked: false } } : c));
+          setDustBalance(prev => prev + releasedAmount);
           alert("Funds Released!");
           return;
       }
@@ -495,7 +503,7 @@ function App() {
         {/* Top Header */}
         <header className="topbar">
            <div className="topbar-pill">
-             <Wallet size={16} /> {contracts.length * 100}.00 DUST
+             <Wallet size={16} /> {dustBalance.toFixed(2)} DUST
            </div>
            <button style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}><Sun size={20} /></button>
            <button style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', position: 'relative' }}>
