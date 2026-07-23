@@ -10,7 +10,7 @@ ConditionalBlock is a decentralized application (dApp) that enables users to cre
 https://conditionalblock-z9qm-omega.vercel.app/
 ## 🎥 Video
 
-https://github.com/user-attachments/assets/d43603d7-9759-4292-bc8a-79d2b70c5950
+https://github.com/user-attachments/assets/60e96fc7-4613-48ba-9df1-99c559a2daa7
 
 ---
 
@@ -125,9 +125,11 @@ ConditionalBlock highlights two core advanced features:
 
 ### 2. Live Metrics & Monitoring Dashboard 📊
 The platform features an active internal metrics dashboard (DAU, transactions, retention) and an infrastructure monitoring dashboard (System health, DB latency, Worker status).
-- **Metrics Dashboard:**<img width="1918" height="710" alt="image" src="https://github.com/user-attachments/assets/ad0c71b4-62ef-48c6-a0f9-2a3fafd01eff" />
+- **Metrics Dashboard:**<img width="1918" height="521" alt="image" src="https://github.com/user-attachments/assets/a44cbdd0-15d9-4765-833c-c811bd3150a6" />
 
-- **Monitoring Dashboard:**<img width="1918" height="787" alt="image" src="https://github.com/user-attachments/assets/18f289aa-0366-4450-b825-4b0bf492fa12" />
+
+- **Monitoring Dashboard:**<img width="1918" height="903" alt="image" src="https://github.com/user-attachments/assets/cca02f3f-eb7a-4da9-b9b6-96301a44493f" />
+
 
 
 ---
@@ -151,7 +153,9 @@ The platform features an active internal metrics dashboard (DAU, transactions, r
 ### Desktop Experience
 <!-- PLACEHOLDER: Insert desktop screenshots here -->
 <p align="center">
- <img width="1918" height="911" alt="image" src="https://github.com/user-attachments/assets/d42dabad-ba88-4cab-8fb6-756020ee1e5e" />
+<img width="1915" height="906" alt="image" src="https://github.com/user-attachments/assets/ab24fdb9-5f41-45bf-a78b-bc93e1a62859" />
+<img width="1918" height="902" alt="image" src="https://github.com/user-attachments/assets/20542687-1018-476a-8af5-0929221dc920" />
+
 
 </p>
 ---
