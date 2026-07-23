@@ -327,6 +327,9 @@ function App() {
           throw new Error("No wallet keys found in window.midnight");
         }
         
+        const firstKey = keys[0];
+        const wallet = (window.midnight as any)[firstKey];
+
         let api;
         // Midnight Lace uses connect() as the primary API
         if (typeof wallet.connect === 'function') {
