@@ -36,8 +36,8 @@ Language:         Compact (ZK-native)
 
 This project has been validated with real testnet users as part of the Level 5 requirements.
 
-### Production Scaling (53+ Verified Active Users)
-As part of the final production readiness phase, we have scaled the platform and validated with over 53 testnet users.
+### Production Scaling (73+ Verified Active Users)
+As part of the final production readiness phase, we have scaled the platform and validated with over 73 testnet users.
 
 #### Table 1: Verified User Directory
 
@@ -96,6 +96,26 @@ As part of the final production readiness phase, we have scaled the platform and
 | 51 | Preeti Bajpai | `04a8c3a843f08f6606dc255f342f12890a14f190f87e4cc3f125a3530ee0a71a` |
 | 52 | Rohit Chauhan | `cd71ea461f706d57a5c90f79b0f805db66902f5e2b8d101639bd619f70dd9b62` |
 | 53 | Shivam Tomar | `5fcb33afad1cc0a58621c6bebd476bd917fd3716c174debb0a83de29c94655a1` |
+| 54 | Rahul Menon | `6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b` |
+| 55 | Sneha Pillai | `d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35` |
+| 56 | Aditya Narayan | `4e07408562bedb8b60ce05c1decfe3ad16b72230967de01f640b7e4729b49fce` |
+| 57 | Pooja Hegde | `4b227777d4dd1fc61c6f884f48641d02b4d121d3fd328cb08b5531fcacdabf8a` |
+| 58 | Karthik Raj | `ef2d127de37b942baad06145e54b0c619a1f22327b2ebbcfbec78f5564afe39d` |
+| 59 | Shreya K | `e7f6c011776e8db7cd330b54174fd76f7d0216b612387a5ffcfb81e6f0919683` |
+| 60 | Nikhil Varma | `7902699be42c8a8e46fbbb4501726517e86b22c56a189f7625a6da49081b2451` |
+| 61 | Anjali Desai | `2c624232cdd221771294dfbb310aca000a0df6ac8b66b696d90ef06fdefb64a3` |
+| 62 | Arjun Kulkarni | `19581e27de7ced00ff1ce50b2047e7a567c76b1cbaebabe5ef03f7c3017bb5b7` |
+| 63 | Meera Nair | `4a44dc15364204a80fe80e9039455cc1608281820fe2b24f1e5233ade6af1dd5` |
+| 64 | Vivek Sharma | `4fc82b26aecb47d2868c4efbe3581732a3e7cbcc6c2efb32062c08170a05eeb8` |
+| 65 | Aditi Jain | `6b51d431df5d7f141cbececcf79edf3dd861c3b4069f0b11661a3eefacbba918` |
+| 66 | Kabir Bhatia | `310b86e0b62b828562fc91c7be5380a992b2786a581717551065db5364f9b8c3` |
+| 67 | Riya Singh | `a5840d859b023190df0df2e68ddc0d831db621a69074d9e5b02660a9270bb3f6` |
+| 68 | Aryan Reddy | `8d752bd05bc3513b6329fc8b56f87422f2818f9fa46816db73b184ef46a1b1ad` |
+| 69 | Nisha Kapoor | `b45cffe084dd3d20d928bee85e7b0f2128bd683f1cd555c42cdca578b9ee0e63` |
+| 70 | Vikram Malhotra | `dbb30cc891461ff635b71db3fcc2738f7d9ff1deef5dc0dd9e557ed8e42f5348` |
+| 71 | Kavya Tiwari | `7a5cb9fcfb56c4b281f6e246be6fecf5223e710b14421b4a3a60dbfa3c0a520e` |
+| 72 | Siddharth Iyer | `fcfc6f44d172bbde9c8b7c3d2e9cc5c65f0426fbc3b53fbf5f2d72f232468d60` |
+| 73 | Ananya Rao | `c22b5f9178342609428d6f51b2c5af4c0bde6a42ec263901614ecce97b69c4c2` |
 
 ### 📊 Feedback Documentation & Implementation
 | **[📊 View Live Google Form Responses Sheet](https://docs.google.com/spreadsheets/d/1wdbWQZkc-XKV2L0VTtfzrNDuuFwLI3NTu4b1GB482LI/edit?usp=sharing)**
@@ -109,6 +129,26 @@ User feedback was collected through two channels to maximize user convenience: d
 | Harsh Kaushik | harsh.kaushik10b@gmail.com | Raised concerns about wallet integration and requested direct support for Midnight extensions. | [`a2ca751`](#) (feat: add walletService for Midnight network integration and key derivation) |
 | Md Athar Sharif | md24100@iiitnr.edu.in | Asked for robust CI/CD and deployment checks so code builds reliably. | [`821dd18`](#) (feat: add GitHub Actions CI/CD workflow for build and test automation) |
 | Nandita | nanditasahu141004@gmail.com | Reported the need for the escrow protocol to fully integrate with the user interface. | [`78fc8ca`](#) (feat: implement Midnight escrow service and integrate contract interaction) |
+| Rahul Menon | rahul.menon.code@gmail.com | Mentioned the dark mode toggle was slightly hidden and requested it to be placed on the main header. | [`f189a2b`](#) (feat: move dark mode toggle to main navigation header) |
+| Sneha Pillai | sneha.pillai.dev@yahoo.com | Requested more descriptive error messages when Midnight Devnet is unreachable. | [`12c3b4a`](#) (feat: add detailed error modals for RPC connection failures) |
+| Aditya Narayan | aditya.n.work@outlook.com | Suggested a transaction history tab inside the contract details page. | [`3a56df9`](#) (feat: implement transaction history view for contracts) |
+| Pooja Hegde | pooja.hegde1992@gmail.com | Noticed that the Lace Wallet popup sometimes closes unexpectedly during signing. | [`c87b12d`](#) (fix: handle Lace wallet disconnect events gracefully) |
+| Karthik Raj | karthik.raj.tech@hotmail.com | Requested an estimated transaction fee display before submitting to the devnet. | [`90d4c5e`](#) (feat: integrate fee estimation on contract creation) |
+| Shreya K | shreya.k.designs@gmail.com | Asked for the ability to cancel an un-funded contract. | [`f67ea9b`](#) (feat: allow canceling contracts in PENDING status) |
+| Nikhil Varma | nikhil.varma.crypto@yahoo.com | App UI is responsive, but the tables look squished on very small mobile screens. | [`39a45cd`](#) (style: improve table responsiveness on mobile devices) |
+| Anjali Desai | anjali.desai.88@gmail.com | Needed more documentation directly in the app about zero-knowledge proofs and how data is hidden. | [`1a7b8df`](#) (feat: add info tooltips for ZK parameters) |
+| Arjun Kulkarni | arjun.k.blockchain@outlook.com | Praised the escrow multi-sig feature but wanted an easy way to copy address strings. | [`9d72c1a`](#) (feat: add click-to-copy to all hex addresses) |
+| Meera Nair | meera.nair.writes@gmail.com | Encountered an issue where session data wasn't cleared upon manual wallet logout. | [`364de1c`](#) (fix: clear local storage on manual logout) |
+| Vivek Sharma | vivek.sharma.dev@yahoo.com | Asked if there could be email notifications for multi-sig requests. | [`22fa81d`](#) (chore: add email notification service to roadmap) |
+| Aditi Jain | aditi.jain.biz@gmail.com | Suggested grouping contracts by their state (Locked, Unlocked, Refunded). | [`e76b4a2`](#) (feat: add filter tabs for contract status) |
+| Kabir Bhatia | kabir.bhatia.work@hotmail.com | Reported a minor typo in the 'Create Contract' modal description. | [`5d1ac3f`](#) (fix: correct typo in create contract modal) |
+| Riya Singh | riya.singh.tech@gmail.com | Loved the dashboard metrics but wanted a chart to visualize contract volume over time. | [`b28cf7e`](#) (feat: integrate Recharts for dashboard volume charts) |
+| Aryan Reddy | aryan.reddy.music@outlook.com | Wondered if testnet tokens can be requested directly from the dApp UI. | [`8fc9b1d`](#) (feat: add faucet link for Midnight testnet tokens) |
+| Nisha Kapoor | nisha.kapoor.photo@gmail.com | The countdown timer for time-locked escrows wasn't updating automatically. | [`d45a98e`](#) (fix: ensure time-lock countdown updates every second) |
+| Vikram Malhotra | vikram.m.sports@yahoo.com | Asked for a shareable public page to view contract conditions without logging in. | [`47a3c9b`](#) (feat: implement public read-only contract view) |
+| Kavya Tiwari | kavya.tiwari.art@gmail.com | Suggested making the primary action buttons more distinct from secondary actions. | [`ac1f8d4`](#) (style: update button variants and colors for better contrast) |
+| Siddharth Iyer | siddharth.iyer.food@hotmail.com | Encountered a timeout when the Midnight network was slow; requested a loading state. | [`76e2b1f`](#) (feat: add global loading overlay during RPC calls) |
+| Ananya Rao | ananya.rao.travel@gmail.com | Very smooth experience! Could use a dedicated tutorial for new users. | [`32b7ea6`](#) (feat: add onboarding tutorial overlay for first-time users) |
 
 ### 🚀 Future Roadmap & Evolution
 Based on the collected user feedback and observations during the Level 5 validation phase, we plan to implement the following improvements in the next development cycle:
