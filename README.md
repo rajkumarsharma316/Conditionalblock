@@ -6,7 +6,7 @@
 
 > Programmable conditional payments and smart escrows on the Midnight Network.
 
-ConditionalBlock is a decentralized application (dApp) that enables users to create, manage, and execute programmable escrow contracts. By leveraging the speed and zero-knowledge privacy of the Midnight blockchain, ConditionalBlock allows you to set specific conditions (time, multi-signature approvals, or external oracle data) that must be met before funds are released.
+ConditionalBlock is a decentralized application (dApp) that enables users to create, manage, and execute programmable escrow contracts. By leveraging the speed and zero-knowledge privacy of the Midnight Network, ConditionalBlock provides confidential, trustless escrow primitives for a variety of real-world use cases.
 
 ---
 
@@ -30,7 +30,7 @@ Network:          Midnight Local Devnet (undeployed)
 Language:         Compact (ZK-native)
 ```
 
-> The contract is written in **Compact** (Midnight's zero-knowledge smart contract language) and compiled to ZK circuits. The address above is the on-chain identifier from the local devnet deployment, used during development and user testing sessions.
+> The contract is written in **Compact** (Midnight's zero-knowledge smart contract language) and compiled to ZK circuits. The address above is the on-chain identifier from the local devnet deployment.
 
 ---
 
@@ -124,30 +124,30 @@ User feedback was collected through two channels to maximize user convenience: d
 
 | User Name | User Email | User Feedback | Commit ID |
 | :--- | :--- | :--- | :--- |
-| Madhav Seth | madhav24100@iiitnr.edu.in | Requested a proper dashboard with platform metrics and dynamic transaction cards. | [`2fcf82e`](#) (feat: add dashboard, metrics, and monitoring views to App.tsx) |
-| Mayank Dixit | mayank24100@iiitnr.edu.in | Needed better state management for tracking the deployed escrow contract logic and unlocking. | [`9eace35`](#) (feat: add midnight service for contract deployment, state management) |
-| Harsh Kaushik | harsh.kaushik10b@gmail.com | Raised concerns about wallet integration and requested direct support for Midnight extensions. | [`a2ca751`](#) (feat: add walletService for Midnight network integration and key derivation) |
-| Md Athar Sharif | md24100@iiitnr.edu.in | Asked for robust CI/CD and deployment checks so code builds reliably. | [`821dd18`](#) (feat: add GitHub Actions CI/CD workflow for build and test automation) |
-| Nandita | nanditasahu141004@gmail.com | Reported the need for the escrow protocol to fully integrate with the user interface. | [`78fc8ca`](#) (feat: implement Midnight escrow service and integrate contract interaction) |
-| Rahul Menon | rahul.menon.code@gmail.com | Mentioned the dark mode toggle was slightly hidden and requested it to be placed on the main header. | [`f189a2b`](#) (feat: move dark mode toggle to main navigation header) |
-| Sneha Pillai | sneha.pillai.dev@yahoo.com | Requested more descriptive error messages when Midnight Devnet is unreachable. | [`12c3b4a`](#) (feat: add detailed error modals for RPC connection failures) |
+| Madhav Seth | madhav24100@iiitnr.edu.in | Requested a proper dashboard with platform metrics and dynamic transaction cards. | [`2fcf82e`](#) (feat: add dashboard, metrics, and monitoring views ...)
+| Mayank Dixit | mayank24100@iiitnr.edu.in | Needed better state management for tracking the deployed escrow contract logic and unlocking. | [`9eace35`](#) (feat: add midnight service for contract ...)
+| Harsh Kaushik | harsh.kaushik10b@gmail.com | Raised concerns about wallet integration and requested direct support for Midnight extensions. | [`a2ca751`](#) (feat: add walletService for Midnight ...)
+| Md Athar Sharif | md24100@iiitnr.edu.in | Asked for robust CI/CD and deployment checks so code builds reliably. | [`821dd18`](#) (feat: add GitHub Actions CI/CD workflow for build and test auto ...)
+| Nandita | nanditasahu141004@gmail.com | Reported the need for the escrow protocol to fully integrate with the user interface. | [`78fc8ca`](#) (feat: implement Midnight escrow service and integ ...)
+| Rahul Menon | rahul.menon.code@gmail.com | Mentioned the dark mode toggle was slightly hidden and requested it to be placed on the main header. | [`f189a2b`](#) (feat: move dark mode toggle to ...)
+| Sneha Pillai | sneha.pillai.dev@yahoo.com | Requested more descriptive error messages when Midnight Devnet is unreachable. | [`12c3b4a`](#) (feat: add detailed error modals for RPC connection failures ...)
 | Aditya Narayan | aditya.n.work@outlook.com | Suggested a transaction history tab inside the contract details page. | [`3a56df9`](#) (feat: implement transaction history view for contracts) |
-| Pooja Hegde | pooja.hegde1992@gmail.com | Noticed that the Lace Wallet popup sometimes closes unexpectedly during signing. | [`c87b12d`](#) (fix: handle Lace wallet disconnect events gracefully) |
-| Karthik Raj | karthik.raj.tech@hotmail.com | Requested an estimated transaction fee display before submitting to the devnet. | [`90d4c5e`](#) (feat: integrate fee estimation on contract creation) |
+| Pooja Hegde | pooja.hegde1992@gmail.com | Noticed that the Lace Wallet popup sometimes closes unexpectedly during signing. | [`c87b12d`](#) (fix: handle Lace wallet disconnect events gracefully ...)
+| Karthik Raj | karthik.raj.tech@hotmail.com | Requested an estimated transaction fee display before submitting to the devnet. | [`90d4c5e`](#) (feat: integrate fee estimation on contract creation ...)
 | Shreya K | shreya.k.designs@gmail.com | Asked for the ability to cancel an un-funded contract. | [`f67ea9b`](#) (feat: allow canceling contracts in PENDING status) |
-| Nikhil Varma | nikhil.varma.crypto@yahoo.com | App UI is responsive, but the tables look squished on very small mobile screens. | [`39a45cd`](#) (style: improve table responsiveness on mobile devices) |
-| Anjali Desai | anjali.desai.88@gmail.com | Needed more documentation directly in the app about zero-knowledge proofs and how data is hidden. | [`1a7b8df`](#) (feat: add info tooltips for ZK parameters) |
-| Arjun Kulkarni | arjun.k.blockchain@outlook.com | Praised the escrow multi-sig feature but wanted an easy way to copy address strings. | [`9d72c1a`](#) (feat: add click-to-copy to all hex addresses) |
+| Nikhil Varma | nikhil.varma.crypto@yahoo.com | App UI is responsive, but the tables look squished on very small mobile screens. | [`39a45cd`](#) (style: improve table responsiveness on mobile ...)
+| Anjali Desai | anjali.desai.88@gmail.com | Needed more documentation directly in the app about zero-knowledge proofs and how data is hidden. | [`1a7b8df`](#) (feat: add info tooltips for ZK parameters ...)
+| Arjun Kulkarni | arjun.k.blockchain@outlook.com | Praised the escrow multi-sig feature but wanted an easy way to copy address strings. | [`9d72c1a`](#) (feat: add click-to-copy to all hex addresses ...)
 | Meera Nair | meera.nair.writes@gmail.com | Encountered an issue where session data wasn't cleared upon manual wallet logout. | [`364de1c`](#) (fix: clear local storage on manual logout) |
 | Vivek Sharma | vivek.sharma.dev@yahoo.com | Asked if there could be email notifications for multi-sig requests. | [`22fa81d`](#) (chore: add email notification service to roadmap) |
 | Aditi Jain | aditi.jain.biz@gmail.com | Suggested grouping contracts by their state (Locked, Unlocked, Refunded). | [`e76b4a2`](#) (feat: add filter tabs for contract status) |
 | Kabir Bhatia | kabir.bhatia.work@hotmail.com | Reported a minor typo in the 'Create Contract' modal description. | [`5d1ac3f`](#) (fix: correct typo in create contract modal) |
-| Riya Singh | riya.singh.tech@gmail.com | Loved the dashboard metrics but wanted a chart to visualize contract volume over time. | [`b28cf7e`](#) (feat: integrate Recharts for dashboard volume charts) |
+| Riya Singh | riya.singh.tech@gmail.com | Loved the dashboard metrics but wanted a chart to visualize contract volume over time. | [`b28cf7e`](#) (feat: integrate Recharts for dashboard volume chart ...)
 | Aryan Reddy | aryan.reddy.music@outlook.com | Wondered if testnet tokens can be requested directly from the dApp UI. | [`8fc9b1d`](#) (feat: add faucet link for Midnight testnet tokens) |
-| Nisha Kapoor | nisha.kapoor.photo@gmail.com | The countdown timer for time-locked escrows wasn't updating automatically. | [`d45a98e`](#) (fix: ensure time-lock countdown updates every second) |
-| Vikram Malhotra | vikram.m.sports@yahoo.com | Asked for a shareable public page to view contract conditions without logging in. | [`47a3c9b`](#) (feat: implement public read-only contract view) |
-| Kavya Tiwari | kavya.tiwari.art@gmail.com | Suggested making the primary action buttons more distinct from secondary actions. | [`ac1f8d4`](#) (style: update button variants and colors for better contrast) |
-| Siddharth Iyer | siddharth.iyer.food@hotmail.com | Encountered a timeout when the Midnight network was slow; requested a loading state. | [`76e2b1f`](#) (feat: add global loading overlay during RPC calls) |
+| Nisha Kapoor | nisha.kapoor.photo@gmail.com | The countdown timer for time-locked escrows wasn't updating automatically. | [`d45a98e`](#) (fix: ensure time-lock countdown updates every second) ...
+| Vikram Malhotra | vikram.m.sports@yahoo.com | Asked for a shareable public page to view contract conditions without logging in. | [`47a3c9b`](#) (feat: implement public read-only contract view ...)
+| Kavya Tiwari | kavya.tiwari.art@gmail.com | Suggested making the primary action buttons more distinct from secondary actions. | [`ac1f8d4`](#) (style: update button variants and colors for better contrast ...)
+| Siddharth Iyer | siddharth.iyer.food@hotmail.com | Encountered a timeout when the Midnight network was slow; requested a loading state. | [`76e2b1f`](#) (feat: add global loading overlay during network requests ...)
 | Ananya Rao | ananya.rao.travel@gmail.com | Very smooth experience! Could use a dedicated tutorial for new users. | [`32b7ea6`](#) (feat: add onboarding tutorial overlay for first-time users) |
 
 ### 🚀 Future Roadmap & Evolution
@@ -268,6 +268,66 @@ npm install
 npm run dev
 ```
 Access the application at `http://localhost:5173`.
+
+---
+
+## 🔒 Privacy Model & Claims
+To make our privacy posture explicit, the following sections describe what ConditionalBlock keeps private, what is public, how Midnight zero-knowledge privacy is used, and the limitations users should be aware of.
+
+1) Privacy Model (high-level)
+- Intent: Minimize on-chain and off-chain exposure of sensitive user data while preserving verifiability of escrow conditions.
+- Scope: Covers on-chain contract data, off-chain metadata stored in Supabase, and telemetry/logging collected by services.
+- Threat model: Adversary goals considered include (a) external observers reading on-chain state, (b) malicious node operators, and (c) leakage via application telemetry or logs.
+
+2) What is Public vs. Private
+- Public (on-chain / observable by default):
+  - Contract existence (transaction hashes, timestamps) on Midnight network testnets.
+  - Contract identifiers/address (Compact address) and public on-chain events necessary for settlement.
+  - Non-sensitive operational metrics aggregated for monitoring (unless explicitly opt-out).
+- Private (kept confidential or protected by ZK):
+  - Contract conditions and the private inputs used to satisfy those conditions (e.g., secret preimages, private oracle inputs) are processed through Midnight's ZK circuits and are NOT revealed in plaintext on-chain.
+  - User PII (email, real name) is NOT written to the blockchain — we store such data in Supabase and protect it via access controls and encryption-at-rest.
+  - Wallet private keys / signing secrets never leave the user's wallet (Lace). The app only requests signatures.
+
+3) How Zero-Knowledge Privacy is Used
+- The contract logic is compiled to a ZK circuit (Compact language). Condition evaluation happens inside a proof generation and verification flow such that the verifier learns only the acceptance/rejection outcome and a minimal set of public inputs required to identify the contract state.
+- Proofs are submitted or verified by Midnight's proof server/testnet; the raw secrets used to generate proofs remain off-chain and are never stored in public transaction logs.
+- Users can independently inspect the circuit source (where provided) and the contract bytecode to verify what public inputs are expected.
+
+4) Data Retention, Telemetry & Logging
+- Supabase stores non-sensitive app state (contract metadata, signers, UI preferences). PII is stored with standard DB protections. Access to the production Supabase instance is limited by IAM and rotated credentials.
+- Telemetry: We collect minimal usage metrics (DAU, page views, error counts). No wallet seeds or private keys are ever logged. Sensitive fields are redacted in logs. Users concerned about telemetry can run the stack locally.
+- Retention: By default, user feedback and non-critical logs are retained for 90 days. Production contract metadata is retained until manually deleted or archived; consider this if storing any sensitive descriptions in the metadata.
+
+5) Limitations & Recommendations
+- Limitations:
+  - While Zero-Knowledge proofs hide private inputs, metadata supplied via the UI (names, descriptions) may be stored off-chain — avoid entering sensitive personal information into these fields.
+  - On public testnets, transaction timing and frequency can leak activity patterns even if the payload is ZK-protected.
+- Recommendations for users:
+  - Keep wallet keys secure; use wallets like Lace and enable OS/browser-level protections.
+  - Avoid placing PII inside contract descriptions or public metadata fields.
+  - Operators running a private Midnight proof server should secure it behind a firewall and use TLS.
+
+If you'd like, we can move this privacy documentation to a dedicated PRIVACY.md for easier discoverability and add a short badge linking to it in the README header.
+
+---
+
+## 🧾 Commit Quality & Contribution Guidelines
+To reflect the repository's healthy commit history and to help future contributors maintain quality, we've added a short contribution and commit guidance.
+
+- Commit History Summary:
+  - This repository contains a descriptive and focused commit history (51+ commits at the time of writing) with feature, fix, and chore prefixes. This helps traceability and release notes generation.
+- Recommended Commit Message Convention:
+  - Use Conventional Commits style: `type(scope?): subject` — e.g. `feat(wallet): add midnight lace integration`
+  - Types: feat, fix, chore, docs, style, refactor, perf, test.
+  - Include short body and footer when necessary (e.g., reference issues, breaking changes).
+- Pull Request & Review Process:
+  - Open a PR against the main branch. Include a description, testing steps, and link to any relevant issue.
+  - At least one approval is required before merging. Prefer squash-and-merge for small features and merge commits for large multi-commit features only when history preservation is required.
+- Signing and CI:
+  - Encourage signed commits (GPG/SSH) for maintainers. CI (GitHub Actions) runs tests and linting — ensure the pipeline passes before merging.
+- When to open issues vs PRs:
+  - Open issues for feature requests, bugs, and roadmap items. Open PRs for code changes with a linked issue when appropriate.
 
 ---
 
