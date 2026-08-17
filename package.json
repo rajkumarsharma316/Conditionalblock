@@ -8,7 +8,9 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "compile": "wsl ~/.local/bin/compact compile contracts/escrow.compact src/compiled/escrow"
+    "compile": "wsl ~/.local/bin/compact compile contracts/escrow.compact src/compiled/escrow",
+    "test:unit": "echo \"No unit tests configured yet\" && exit 0",
+    "test": "npm run test:unit"
   },
   "dependencies": {
     "@midnight-ntwrk/compact-runtime": "^0.16.0",
