@@ -1,4 +1,4 @@
-import { PaymentCondition, PaymentEngine, ConditionResult } from './types';
+import type { PaymentCondition, PaymentEngine, ConditionResult } from './types';
 
 export class ConditionalPaymentEngine implements PaymentEngine {
   private conditions: Map<string, PaymentCondition> = new Map();
