@@ -2,24 +2,77 @@ pragma language_version >= 0.14.0;
 
 import CompactStandardLibrary;
 
+const STATUS_PENDING: Uint<8> = 0;
+const STATUS_LOCKED: Uint<8> = 1;
+const STATUS_READY: Uint<8> = 2;
+const STATUS_RELEASED: Uint<8> = 3;
+const STATUS_CANCELLED: Uint<8> = 4;
+const STATUS_REFUNDED: Uint<8> = 5;
+
 export ledger depositor: Bytes<32>;
 export ledger beneficiary: Bytes<32>;
 export ledger amount: Uint<64>;
-export ledger isLocked: Boolean;
+export ledger deadline: Uint<64>;
+export ledger requiredApprovals: Uint<8>;
+export ledger approvals: Uint<8>;
+export ledger status: Uint<8>;
+export ledger createdAt: Uint<64>;
+export ledger releasedAt: Uint<64>;
 
-constructor(beneficiary_arg: Bytes<32>, amount_arg: Uint<64>) {
-  // depositor is implicit or passed as arg if needed
+constructor(
+  depositor_arg: Bytes<32>,
+  beneficiary_arg: Bytes<32>,
+  amount_arg: Uint<64>,
+  deadline_arg: Uint<64>,
+  required_approvals_arg: Uint<8>
+) {
+  depositor = disclose(depositor_arg);
   beneficiary = disclose(beneficiary_arg);
   amount = disclose(amount_arg);
-  isLocked = true;
+  deadline = disclose(deadline_arg);
+  requiredApprovals = disclose(required_approvals_arg);
+
+  approvals = 0;
+  status = STATUS_PENDING;
+  createdAt = 0;
+  releasedAt = 0;
+}
+
+export circuit activateEscrow(): [] {
+  assert(status == STATUS_PENDING, "Escrow is not pending");
+  status = STATUS_LOCKED;
+  createdAt = now();
+}
+
+export circuit approveRelease(): [] {
+  assert(status == STATUS_LOCKED || status == STATUS_PENDING, "Escrow is not in an approvable state");
+  approvals = approvals + 1;
+
+  if (approvals >= requiredApprovals) {
+    status = STATUS_READY;
+  }
 }
 
 export circuit releaseFunds(): [] {
-  assert(isLocked == true, "Funds are already released or contract is inactive");
-  // In a real app, verify a zero-knowledge proof of the beneficiary's private key
-  // or a pre-image of a hash to authorize the release.
-  
-  isLocked = false;
-  // Note: Actual token transfer logic (tDUST or custom tokens) would be integrated here
-  // using Midnight's standard token ledger capabilities.
+  assert(status == STATUS_READY || status == STATUS_LOCKED, "Escrow is not ready to release");
+  assert(amount > 0, "Escrow amount must be positive");
+
+  status = STATUS_RELEASED;
+  releasedAt = now();
+}
+
+export circuit cancelEscrow(): [] {
+  assert(status == STATUS_PENDING || status == STATUS_LOCKED, "Escrow cannot be cancelled in this state");
+  assert(now() < deadline, "Escrow deadline has already passed");
+
+  status = STATUS_CANCELLED;
+}
+
+export circuit refundEscrow(): [] {
+  assert(status == STATUS_CANCELLED || now() >= deadline, "Refund is not allowed yet");
+  status = STATUS_REFUNDED;
+}
+
+export circuit isActive(): Boolean {
+  return status == STATUS_PENDING || status == STATUS_LOCKED || status == STATUS_READY;
 }

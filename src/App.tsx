@@ -8,6 +8,15 @@ import { createLaceWalletContext, getShieldedAddress, type WalletContext } from 
 import { initializeProviders, deployEscrowContract, getEscrowState, releaseEscrowFunds, type EscrowProviders, type EscrowState } from './services/midnight';
 import './index.css';
 
+const getContractStatusLabel = (state: Partial<EscrowState> | any) => {
+  const status = String(state?.status || '').toLowerCase();
+  if (status === 'released' || status === 'refunded' || status === 'completed' || !state?.isLocked) return 'Completed';
+  if (status === 'ready') return 'Ready';
+  if (status === 'cancelled') return 'Cancelled';
+  if (status === 'pending') return 'Pending';
+  return state?.isLocked ? 'Locked' : 'Completed';
+};
+
 // --- NEW VIEWS ---
 
 const MetricsView = () => (
@@ -117,9 +126,9 @@ const DashboardView = ({
   deployBeneficiary, setDeployBeneficiary, deployAmount, setDeployAmount, handleDeploy,
   loadAddress, setLoadAddress, handleLoadContract
 }: any) => {
-  const activeContracts = contracts.filter((c: any) => c.state.isLocked).length;
-  const completedContracts = contracts.filter((c: any) => !c.state.isLocked).length;
-  const tvl = contracts.filter((c: any) => c.state.isLocked).reduce((acc: any, c: any) => acc + Number(c.state.amount), 0);
+  const activeContracts = contracts.filter((c: any) => c.state.isLocked || c.state.status === 'pending' || c.state.status === 'locked' || c.state.status === 'ready').length;
+  const completedContracts = contracts.filter((c: any) => !c.state.isLocked && c.state.status !== 'pending' && c.state.status !== 'locked' && c.state.status !== 'ready').length;
+  const tvl = contracts.filter((c: any) => c.state.isLocked || c.state.status === 'pending' || c.state.status === 'locked' || c.state.status === 'ready').reduce((acc: any, c: any) => acc + Number(c.state.amount), 0);
 
   return (
     <div className="animate-fade-in-up">
@@ -128,7 +137,7 @@ const DashboardView = ({
           <h2 style={{ margin: 0, color: 'var(--accent-electric)' }}>Dashboard</h2>
           <p style={{ color: 'var(--text-muted)', margin: '8px 0 0 0' }}>Overview of your conditional payment contracts</p>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '8px' }}>
-            Welcome to ConditionalBlock. Create and manage secure, time-based escrow smart contracts on the Midnight network. 
+            Welcome to ConditionalBlock. Create and manage secure, time-based escrow smart contracts on the Midnight network.
             Set programmable payment conditions that automatically execute and release funds without requiring a middleman.
           </p>
         </div>
@@ -169,8 +178,8 @@ const DashboardView = ({
         <div className="glass-panel" style={{ marginBottom: '32px', padding: '24px' }}>
           <h3>Create New Escrow</h3>
           <div style={{ display: 'flex', gap: '16px', marginTop: '16px', flexWrap: 'wrap' }}>
-            <input type="text" placeholder="Beneficiary Hex (64 chars)" value={deployBeneficiary} onChange={e => setDeployBeneficiary(e.target.value)} style={{ flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid var(--border-glass)', background: 'rgba(255,255,255,0.05)', color: 'white' }} />
-            <input type="number" placeholder="Amount" value={deployAmount} onChange={e => setDeployAmount(e.target.value)} style={{ width: '150px', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-glass)', background: 'rgba(255,255,255,0.05)', color: 'white' }} />
+            <input type="text" placeholder="Beneficiary Hex (64 chars)" value={deployBeneficiary} onChange={e => setDeployBeneficiary(e.target.value)} style={{ flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.02)', color: '#fff', minWidth: '220px' }} />
+            <input type="number" placeholder="Amount" value={deployAmount} onChange={e => setDeployAmount(e.target.value)} style={{ width: '150px', padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.02)', color: '#fff' }} />
             <button className="btn-primary" onClick={handleDeploy}>Deploy</button>
             <button className="btn-secondary" onClick={() => setShowDeploy(false)}>Cancel</button>
           </div>
@@ -181,7 +190,7 @@ const DashboardView = ({
         <div className="glass-panel" style={{ marginBottom: '32px', padding: '24px' }}>
           <h3>Load Existing Escrow</h3>
           <div style={{ display: 'flex', gap: '16px', marginTop: '16px', flexWrap: 'wrap' }}>
-            <input type="text" placeholder="Contract Address" value={loadAddress} onChange={e => setLoadAddress(e.target.value)} style={{ flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid var(--border-glass)', background: 'rgba(255,255,255,0.05)', color: 'white' }} />
+            <input type="text" placeholder="Contract Address" value={loadAddress} onChange={e => setLoadAddress(e.target.value)} style={{ flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.02)', color: '#fff', minWidth: '220px' }} />
             <button className="btn-primary" onClick={handleLoadContract}>Load</button>
             <button className="btn-secondary" onClick={() => setShowLoad(false)}>Cancel</button>
           </div>
@@ -196,48 +205,56 @@ const DashboardView = ({
           </div>
         ) : (
           <div className="grid-cards">
-            {contracts.map((c: any, i: number) => (
-              <div key={i} className="glass-panel" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
-                <div className="flex-between">
-                  <div style={{ fontWeight: 600, fontSize: '1.1rem' }}>
-                    {c.address.substring(0, 10)}...{c.address.substring(c.address.length - 6)}
+            {contracts.map((c: any, i: number) => {
+              const statusLabel = getContractStatusLabel(c.state);
+              const isCompleted = statusLabel === 'Completed' || statusLabel === 'Cancelled';
+
+              return (
+                <div key={i} className="glass-panel" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
+                  <div className="flex-between">
+                    <div style={{ fontWeight: 600, fontSize: '1.1rem' }}>
+                      {c.address.substring(0, 10)}...{c.address.substring(c.address.length - 6)}
+                    </div>
+                    <span style={{ 
+                      padding: '6px 16px', 
+                      borderRadius: '24px', 
+                      fontSize: '0.9rem',
+                      fontWeight: 600,
+                      background: isCompleted ? 'rgba(46, 213, 115, 0.1)' : 'rgba(0, 210, 255, 0.1)',
+                      color: isCompleted ? '#2ed573' : 'var(--accent-electric)',
+                    }}>
+                      {statusLabel}
+                    </span>
                   </div>
-                  <span style={{ 
-                    padding: '6px 16px', 
-                    borderRadius: '24px', 
-                    fontSize: '0.9rem',
-                    fontWeight: 600,
-                    background: !c.state.isLocked ? 'rgba(46, 213, 115, 0.1)' : 'rgba(0, 210, 255, 0.1)',
-                    color: !c.state.isLocked ? '#2ed573' : 'var(--accent-electric)',
-                  }}>
-                    {!c.state.isLocked ? 'Completed' : 'Locked'}
-                  </span>
-                </div>
-                
-                <div style={{ padding: 'var(--space-sm) 0', borderTop: '1px solid var(--border-glass)', borderBottom: '1px solid var(--border-glass)' }}>
-                  <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '4px' }}>Value Locked</div>
-                  <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--accent-electric)' }}>{c.state.amount.toString()} DUST</div>
-                </div>
+                  
+                  <div style={{ padding: 'var(--space-sm) 0', borderTop: '1px solid var(--border-glass)', borderBottom: '1px solid var(--border-glass)' }}>
+                    <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '4px' }}>Value Locked</div>
+                    <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--accent-electric)' }}>{c.state.amount.toString()} DUST</div>
+                  </div>
 
-                <div>
-                  <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '4px' }}>Beneficiary</div>
-                  <div style={{ fontFamily: 'monospace', fontSize: '0.95rem' }}>{c.state.beneficiary.substring(0, 16)}...</div>
-                </div>
+                  <div>
+                    <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '4px' }}>Beneficiary</div>
+                    <div style={{ fontFamily: 'monospace', fontSize: '0.95rem' }}>{c.state.beneficiary.substring(0, 16)}...</div>
+                  </div>
 
-                {c.state.isLocked && (
-                  <button className="btn-secondary" onClick={() => handleRelease(c.address)} style={{ marginTop: 'var(--space-sm)', width: '100%' }}>
-                    Release Funds
-                  </button>
-                )}
-              </div>
-            ))}
+                  <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                    Approvals: {c.state.approvals ?? 0}/{c.state.requiredApprovals ?? 1}
+                  </div>
+
+                  {(c.state.isLocked || c.state.status === 'pending' || c.state.status === 'locked' || c.state.status === 'ready') && (
+                    <button className="btn-secondary" onClick={() => handleRelease(c.address)} style={{ marginTop: 'var(--space-sm)', width: '100%' }}>
+                      Release Funds
+                    </button>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
     </div>
   );
 };
-
 
 // --- APP ---
 
@@ -249,20 +266,17 @@ function App() {
   const [connectionError, setConnectionError] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
 
-  // Dashboard Data State
   const [contracts, setContracts] = useState<{address: string, state: EscrowState}[]>([]);
   const [providers, setProviders] = useState<EscrowProviders | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [dustBalance, setDustBalance] = useState(1000);
-  
-  // Forms State
+
   const [showDeploy, setShowDeploy] = useState(false);
   const [deployBeneficiary, setDeployBeneficiary] = useState('');
   const [deployAmount, setDeployAmount] = useState('100');
   const [showLoad, setShowLoad] = useState(false);
   const [loadAddress, setLoadAddress] = useState('');
 
-  // Check if wallet was already enabled
   useEffect(() => {
     let mounted = true;
     const checkConnection = async () => {
@@ -272,8 +286,7 @@ function App() {
           if (keys.length > 0) {
             const wallet = (window.midnight as any)[keys[0]];
             const isEnabled = typeof wallet.isEnabled === 'function' ? await wallet.isEnabled() : false;
-            
-            // Only auto-connect if the user previously enabled the wallet
+
             if (isEnabled && mounted) {
               let api;
               if (typeof wallet.enable === 'function') {
@@ -281,7 +294,7 @@ function App() {
               } else if (typeof wallet.connect === 'function') {
                 api = await wallet.connect('undeployed');
               }
-              
+
               if (api && mounted) {
                 const walletCtx = await createLaceWalletContext(api);
                 setWalletContext(walletCtx);
@@ -292,7 +305,7 @@ function App() {
             }
           }
         } catch (e) {
-          console.error("Error checking lace connection", e);
+          console.error('Error checking lace connection', e);
         }
       }
     };
@@ -320,20 +333,19 @@ function App() {
       try {
         const keys = Object.keys(window.midnight);
         if (keys.length === 0) {
-          throw new Error("No wallet keys found in window.midnight");
+          throw new Error('No wallet keys found in window.midnight');
         }
-        
+
         const firstKey = keys[0];
         const wallet = (window.midnight as any)[firstKey];
 
         let api;
-        // Midnight Lace uses connect() as the primary API
         if (typeof wallet.connect === 'function') {
           api = await wallet.connect('undeployed');
         } else if (typeof wallet.enable === 'function') {
           api = await wallet.enable();
         } else {
-          throw new Error("The wallet does not expose a connect() or enable() function.");
+          throw new Error('The wallet does not expose a connect() or enable() function.');
         }
 
         if (api) {
@@ -344,20 +356,20 @@ function App() {
           setIsConnected(true);
         }
       } catch (err: any) {
-        console.error("Failed to connect lace", err);
+        console.error('Failed to connect lace', err);
         const msg = err.message || JSON.stringify(err);
         if (msg.includes('reject') || msg.includes('denied') || msg.includes('cancel')) {
-          setConnectionError("Connection rejected. Please approve in your Lace wallet and try again.");
+          setConnectionError('Connection rejected. Please approve in your Lace wallet and try again.');
         } else if (msg.includes('port closed') || msg.includes('liveness') || msg.includes('timed out')) {
-          setConnectionError("Lace extension crashed. Go to chrome://extensions → find Lace → click reload icon, then try again.");
+          setConnectionError('Lace extension crashed. Go to chrome://extensions → find Lace → click reload icon, then try again.');
         } else {
-          setConnectionError("Failed to connect: " + msg);
+          setConnectionError('Failed to connect: ' + msg);
         }
       } finally {
         setIsConnecting(false);
       }
     } else {
-      setConnectionError("Lace Midnight Preview wallet extension is not installed or did not inject properly. Please ensure it is installed and enabled.");
+      setConnectionError('Lace Midnight Preview wallet extension is not installed or did not inject properly. Please ensure it is installed and enabled.');
       setIsConnecting(false);
     }
   };
@@ -376,8 +388,8 @@ function App() {
       setDustBalance(prev => prev - amount);
       setShowDeploy(false);
     } catch (e: any) {
-      console.error("Deploy failed error object:", e);
-      alert("Deploy failed: " + (e.message || (typeof e === 'object' ? JSON.stringify(e) : String(e))));
+      console.error('Deploy failed error object:', e);
+      alert('Deploy failed: ' + (e.message || (typeof e === 'object' ? JSON.stringify(e) : String(e))));
     } finally {
       setIsLoading(false);
     }
@@ -394,8 +406,8 @@ function App() {
       setShowLoad(false);
       setLoadAddress('');
     } catch (e: any) {
-      console.error("Load failed error object:", e);
-      alert("Load failed: " + (e.message || (typeof e === 'object' ? JSON.stringify(e) : String(e))));
+      console.error('Load failed error object:', e);
+      alert('Load failed: ' + (e.message || (typeof e === 'object' ? JSON.stringify(e) : String(e))));
     } finally {
       setIsLoading(false);
     }
@@ -407,37 +419,37 @@ function App() {
       setIsLoading(true);
 
       if (contractAddress === '732b260e731ffa24455657f702113ca858025bfe145847c9fdeb686314c398fa') {
-          const releasedContract = contracts.find(c => c.address === contractAddress);
-          const releasedAmount = releasedContract ? Number(releasedContract.state.amount) : 0;
-          await releaseEscrowFunds(null);
-          setContracts(prev => prev.map(c => c.address === contractAddress ? { ...c, state: { ...c.state, isLocked: false } } : c));
-          setDustBalance(prev => prev + releasedAmount);
-          alert("Funds Released!");
-          return;
+        const releasedContract = contracts.find(c => c.address === contractAddress);
+        const releasedAmount = releasedContract ? Number(releasedContract.state.amount) : 0;
+        await releaseEscrowFunds(null);
+        setContracts(prev => prev.map(c => c.address === contractAddress ? { ...c, state: { ...c.state, status: 'released', isLocked: false } } : c));
+        setDustBalance(prev => prev + releasedAmount);
+        alert('Funds Released!');
+        return;
       }
 
       const { findDeployedContract } = await import('@midnight-ntwrk/midnight-js-contracts');
       const { CompiledContract } = await import('@midnight-ntwrk/midnight-js-protocol/compact-js');
       const { Contract } = await import('./compiled/escrow/contract/index.js');
-      
+
       const escrowCompiledContract = CompiledContract.make('escrow', Contract).pipe(
-          CompiledContract.withVacantWitnesses
+        CompiledContract.withVacantWitnesses,
       );
-      
+
       const deployed = await findDeployedContract(providers, {
-          contractAddress,
-          compiledContract: escrowCompiledContract as any,
-          privateStateId: 'escrowPrivateState',
-          initialPrivateState: {},
+        contractAddress,
+        compiledContract: escrowCompiledContract as any,
+        privateStateId: 'escrowPrivateState',
+        initialPrivateState: {},
       });
       await releaseEscrowFunds(deployed);
-      
+
       const newState = await getEscrowState(providers, contractAddress);
       setContracts(prev => prev.map(c => c.address === contractAddress ? { ...c, state: newState } : c));
-      alert("Funds Released!");
+      alert('Funds Released!');
     } catch (e: any) {
-      console.error("Release failed error object:", e);
-      alert("Release failed: " + (e.message || (typeof e === 'object' ? JSON.stringify(e) : String(e))));
+      console.error('Release failed error object:', e);
+      alert('Release failed: ' + (e.message || (typeof e === 'object' ? JSON.stringify(e) : String(e))));
     } finally {
       setIsLoading(false);
     }
@@ -450,9 +462,9 @@ function App() {
           <img src="/logo.png" alt="ConditionalBlock Logo" style={{ width: '100px', height: 'auto', margin: '0 auto 24px', display: 'block', objectFit: 'contain' }} />
           <h2 style={{ marginBottom: '16px' }}>Conditional<span style={{ color: 'var(--accent-electric)' }}>Block</span></h2>
           <p style={{ marginBottom: '32px', color: 'var(--text-muted)' }}>You must connect your Lace wallet to view and manage your escrow contracts on the Midnight devnet.</p>
-          
+
           {connectionError && (
-            <div style={{ padding: '12px', background: 'rgba(231, 76, 60, 0.1)', border: '1px solid #e74c3c', color: '#ff6b6b', borderRadius: '8px', marginBottom: '20px', fontSize: '0.9rem', textAlign: 'left' }}>
+            <div style={{ padding: '12px', background: 'rgba(231, 76, 60, 0.1)', border: '1px solid #e74c3c', color: '#ff6b6b', borderRadius: '8px', marginBottom: '20px', fontSize: '0.9rem' }}>
               <strong>Error:</strong> {connectionError}
             </div>
           )}
@@ -474,7 +486,6 @@ function App() {
 
   return (
     <div className="app-layout">
-      {/* Sidebar */}
       <aside className="app-sidebar">
         <div className="sidebar-header flex-between" style={{ alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -483,7 +494,7 @@ function App() {
               Conditional<span style={{ color: 'var(--accent-electric)' }}>Block</span>
             </span>
           </div>
-          <button style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-glass)', borderRadius: '6px', color: 'var(--text-muted)', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+          <button style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-glass)', borderRadius: '6px', color: 'var(--text-muted)', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <ChevronRight size={16} />
           </button>
         </div>
@@ -498,7 +509,7 @@ function App() {
           <button className={`sidebar-item ${currentView === 'transactions' ? 'active' : ''}`} onClick={() => setCurrentView('transactions')}>
             <ArrowRightLeft size={18} /> Transactions
           </button>
-          
+
           <button className={`sidebar-item ${currentView === 'metrics' ? 'active' : ''}`} onClick={() => setCurrentView('metrics')}>
             <BarChart3 size={18} /> Metrics
           </button>
@@ -520,27 +531,24 @@ function App() {
         </div>
       </aside>
 
-      {/* Main Content Area */}
       <main className="app-main">
-        {/* Top Header */}
         <header className="topbar">
-           <div className="topbar-pill">
-             <Wallet size={16} /> {dustBalance.toFixed(2)} DUST
-           </div>
-           <button style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}><Sun size={20} /></button>
-           <button style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', position: 'relative' }}>
-             <Bell size={20} />
-             <div style={{ position: 'absolute', top: '-4px', right: '-4px', background: '#e74c3c', color: 'white', fontSize: '0.65rem', width: '16px', height: '16px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>8</div>
-           </button>
-           <div className="topbar-pill" style={{ color: 'var(--accent-electric)', borderColor: 'var(--accent-electric)', cursor: 'pointer' }}>
-             {address.substring(0, 6)}...{address.substring(address.length - 6)}
-           </div>
-           <button style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }} onClick={handleConnect} title="Disconnect">
-             <LogOut size={20} />
-           </button>
+          <div className="topbar-pill">
+            <Wallet size={16} /> {dustBalance.toFixed(2)} DUST
+          </div>
+          <button style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}><Sun size={20} /></button>
+          <button style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', position: 'relative' }}>
+            <Bell size={20} />
+            <div style={{ position: 'absolute', top: '-4px', right: '-4px', background: '#e74c3c', color: 'white', fontSize: '0.65rem', width: '16px', height: '16px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>3</div>
+          </button>
+          <div className="topbar-pill" style={{ color: 'var(--accent-electric)', borderColor: 'var(--accent-electric)', cursor: 'pointer' }}>
+            {address.substring(0, 6)}...{address.substring(address.length - 6)}
+          </div>
+          <button style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }} onClick={handleConnect} title="Disconnect">
+            <LogOut size={20} />
+          </button>
         </header>
 
-        {/* Scrollable Views */}
         <div className="main-scroll-area">
           <div className="main-content-inner">
             {isLoading && (
@@ -567,7 +575,7 @@ function App() {
             {currentView === 'monitoring' && <MonitoringView />}
             {currentView === 'transactions' && (
               <div className="flex-center" style={{ height: '300px', color: 'var(--text-muted)' }}>
-                  <h3>No recent transactions found.</h3>
+                <h3>No recent transactions found.</h3>
               </div>
             )}
           </div>
@@ -578,3 +586,245 @@ function App() {
 }
 
 export default App;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

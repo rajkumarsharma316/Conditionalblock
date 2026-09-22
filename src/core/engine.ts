@@ -1,34 +1,26 @@
-import type { PaymentCondition, PaymentEngine, ConditionResult } from './types';
+export type EscrowStatus = 'pending' | 'locked' | 'ready' | 'released' | 'cancelled' | 'refunded';
 
-export class ConditionalPaymentEngine implements PaymentEngine {
-  private conditions: Map<string, PaymentCondition> = new Map();
-  private executionHistory: ConditionResult[] = [];
+export interface PaymentCondition {
+  evaluate(): Promise<ConditionResult>;
+}
 
-  registerCondition(id: string, condition: PaymentCondition): void {
-    this.conditions.set(id, condition);
-  }
+export interface ConditionResult {
+  satisfied: boolean;
+  amount: bigint;
+  status: EscrowStatus;
+  timestamp: number;
+}
 
-  async evaluateCondition(conditionId: string): Promise<ConditionResult> {
-    const condition = this.conditions.get(conditionId);
-    if (!condition) {
-      throw new Error(`Condition ${conditionId} not found`);
-    }
+export interface PaymentEngine {
+  registerCondition(id: string, condition: PaymentCondition): void;
+  evaluateCondition(conditionId: string): Promise<ConditionResult>;
+  executePayment(conditionId: string, amount: bigint): Promise<boolean>;
+  getExecutionHistory(): ConditionResult[];
+  clearHistory(): void;
+}
 
-    const result = await condition.evaluate();
-    this.executionHistory.push(result);
-    return result;
-  }
-
-  async executePayment(conditionId: string, amount: bigint): Promise<boolean> {
-    const result = await this.evaluateCondition(conditionId);
-    return result.satisfied && result.amount >= amount;
-  }
-
-  getExecutionHistory(): ConditionResult[] {
-    return [...this.executionHistory];
-  }
-
-  clearHistory(): void {
-    this.executionHistory = [];
-  }
+export interface MidnightPaymentConfig {
+  network: string;
+  contractAddress: string;
+  gasLimit: bigint;
 }
