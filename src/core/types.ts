@@ -1,3 +1,5 @@
+export type EscrowStatus = 'pending' | 'locked' | 'ready' | 'released' | 'cancelled' | 'refunded';
+
 export interface PaymentCondition {
   evaluate(): Promise<ConditionResult>;
 }
@@ -5,6 +7,7 @@ export interface PaymentCondition {
 export interface ConditionResult {
   satisfied: boolean;
   amount: bigint;
+  status: EscrowStatus;
   timestamp: number;
 }
 
